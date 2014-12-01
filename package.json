@@ -1,0 +1,35 @@
+{
+  "name": "humid",
+  "version": "0.0.0",
+  "description": "specific, deep data hydration for SQL databases",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "keywords": [
+    "hydration",
+    "sql",
+    "relations",
+    "deep"
+  ],
+  "author": "Matt Greer <matt.e.greer@gmail.com> (http://www.mattgreer.org/)",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^2.3.11",
+    "knex": "^0.7.3",
+    "lodash": "^2.4.1"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "chai-as-promised": "^4.1.1",
+    "gulp": "^3.8.10",
+    "gulp-jshint": "^1.9.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-shell": "^0.2.11",
+    "sql-fixtures": "^0.5.0",
+    "sqlite3": "^3.0.4"
+  }
+}

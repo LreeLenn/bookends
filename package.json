@@ -23,6 +23,7 @@
     "lodash": "^2.4.1"
   },
   "devDependencies": {
+    "bookshelf": "^0.7.9",
     "chai": "^1.10.0",
     "chai-as-promised": "^4.1.1",
     "gulp": "^3.8.10",

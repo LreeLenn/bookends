@@ -255,6 +255,39 @@ module.exports = function(dbConfig) {
           });
         });
       });
+
+      describe('collect', function() {
+        it('should collect the relation', function(done) {
+          var dataSpec = {
+            parent: {
+              string_column: 'parent0'
+            },
+            child: [
+              {
+                parent_id: 'parent:0',
+                string_column: 'child0'
+              },
+              {
+                parent_id: 'parent:0',
+                string_column: 'child1'
+              }
+            ]
+          };
+
+          fixtureGenerator.create(dataSpec).then(function(result) {
+            // 'children=collect(string_column)'
+            var hydration = [
+              { relation: 'children', aggregation: 'collect', params: ['string_column'] }
+            ];
+
+            bookends.hydrate(Parent, hydration).then(function(records) {
+              var record = records.pop();
+              expect(record.children).to.eql(['child0', 'child1']);
+              done();
+            });
+          });
+        });
+      });
     });
   });
 };

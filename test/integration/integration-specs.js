@@ -1,17 +1,18 @@
 var _ = require('lodash');
 var bluebird = require('bluebird');
 var sqlFixtures = require('sql-fixtures');
-var Humid = require('../..');
+var Bookends = require('../..');
 
 module.exports = function(dbConfig) {
-  describe('humid', function() {
+  describe('bookends', function() {
     this.enableTimeouts(false);
 
-    before(function(done) {
+    before(function() {
       this.fixtureGenerator = new sqlFixtures(dbConfig);
       this.knex = this.fixtureGenerator.knex;
-      this.humid = new Humid(this.knex);
-      done();
+      this.bookends = new Bookends(this.knex);
+
+
     });
 
     beforeEach(function(done) {
@@ -19,20 +20,20 @@ module.exports = function(dbConfig) {
       var me = this;
 
       var dropPromises = [
-        knex.schema.dropTableIfExists('child_table'),
-        knex.schema.dropTableIfExists('parent_table')
+        knex.schema.dropTableIfExists('child'),
+        knex.schema.dropTableIfExists('parent')
       ];
 
       bluebird.all(dropPromises).then(function() {
-        knex.schema.createTable('parent_table', function(table) {
+        knex.schema.createTable('parent', function(table) {
           table.increments('id').primary();
           table.string('string_column');
           table.string('second_string_column');
         }).then(function() {
-          knex.schema.createTable('child_table', function(table) {
+          knex.schema.createTable('child', function(table) {
             table.increments('id').primary();
             table.string('string_column');
-            table.integer('parent_id').references('parent_table.id');
+            table.integer('parent_id').references('parent.id');
           }).then(function() {
             done();
           });
@@ -44,24 +45,42 @@ module.exports = function(dbConfig) {
       this.fixtureGenerator.destroy(done);
     });
 
-    describe('simple hydration', function() {
+    describe('hydration', function() {
       it('should do a simple hydration', function(done) {
         var dataSpec = {
-          parent_table: {
+          parent: {
             string_column: 'value1',
             second_string_column: 'value2'
           }
         };
 
-        var humid = this.humid;
+        var bookends = this.bookends;
         this.fixtureGenerator.create(dataSpec).then(function(result) {
-          var where = { id: result.parent_table[0].id };
-
-          humid.hydrate('parent_table', where, ['id', 'string_column']).then(function(record) {
-            expect(record.id).to.equal(result.parent_table[0].id);
+          bookends.hydrate('parent', ['string_column']).then(function(records) {
+            var record = records.pop();
             expect(record.string_column).to.equal('value1');
             expect(record).to.not.have.property('second_string_column');
             done();
+          });
+        });
+      });
+
+      it('should hydrate a child relation', function(done) {
+        var dataSpec = {
+          parent: {
+              string_column: 'value1'
+          },
+          child: {
+            parent_id: 'parent:0',
+            string_column: 'value2'
+          }
+        };
+
+        var bookends = this.bookends;
+        this.fixtureGenerator.create(dataSpec).then(function(result) {
+          bookends.hydrate('parent', ['child.string_column']).then(function(records) {
+            var record = records.pop();
+            expect(record.child[0].string_column).to.equal('value2');
           });
         });
       });

@@ -8,7 +8,7 @@ var fixtureGenerator = null;
 var knex = null;
 var bookends = null;
 
-var Parent, Child;
+var Parent, Child, GrandChild;
 
 module.exports = function(dbConfig) {
   describe('bookends', function() {
@@ -21,8 +21,15 @@ module.exports = function(dbConfig) {
 
       var db = bookshelf(knex);
 
+      GrandChild = db.Model.extend({
+        tableName: 'grandchild'
+      });
+
       Child = db.Model.extend({
-        tableName: 'child'
+        tableName: 'child',
+        children: function() {
+          return this.hasMany(GrandChild, 'child_id');
+        }
       });
 
       Parent = db.Model.extend({
@@ -35,6 +42,7 @@ module.exports = function(dbConfig) {
 
     beforeEach(function(done) {
       var dropPromises = [
+        knex.schema.dropTableIfExists('grandchild'),
         knex.schema.dropTableIfExists('child'),
         knex.schema.dropTableIfExists('parent')
       ];
@@ -50,7 +58,13 @@ module.exports = function(dbConfig) {
             table.string('string_column');
             table.integer('parent_id').references('parent.id');
           }).then(function() {
-            done();
+            knex.schema.createTable('grandchild', function(table) {
+              table.increments('id').primary();
+              table.string('string_column');
+              table.integer('child_id').references('child.id');
+            }).then(function() {
+              done();
+            });
           });
         });
       });
@@ -100,7 +114,7 @@ module.exports = function(dbConfig) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
             expect(record.children[0].string_column).to.equal('value2');
-            expect(record.children[0]).to.not.have.property('id');
+            expect(record.children[0].id).to.be.a('number');
             expect(record.children[0]).to.not.have.property('parent_id');
             done();
           });
@@ -128,8 +142,41 @@ module.exports = function(dbConfig) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
             expect(record.children[0].string_column).to.equal('value2');
-            expect(record.children[0]).to.not.have.property('id');
+            expect(record.children[0].id).to.be.a('number');
             expect(record.children[0].parent_id).to.equal(record.id);
+            done();
+          });
+        });
+      });
+
+      it('should hydrate a second level relation', function(done) {
+        var dataSpec = {
+          parent: {
+            string_column: 'value1'
+          },
+          child: {
+            parent_id: 'parent:0',
+            string_column: 'value2'
+          },
+          grandchild: {
+            child_id: 'child:0',
+            string_column: 'value3'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          // 'children=[string_column,children=[string_column]]'
+          var hydration = [{
+            relation: 'children',
+            hydration: [
+              'string_column',
+              { relation: 'children', hydration: ['string_column']}
+            ]
+          }];
+
+          bookends.hydrate(Parent, hydration).then(function(records) {
+            expect(records[0].children[0].children[0].string_column).to.equal('value3');
+            expect(records[0].children[0].children[0]).to.not.have.property('child_id');
             done();
           });
         });

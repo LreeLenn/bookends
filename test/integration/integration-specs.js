@@ -114,7 +114,7 @@ module.exports = function(dbConfig) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
             expect(record.children[0].string_column).to.equal('value2');
-            expect(record.children[0].id).to.be.a('number');
+            expect(record.children[0]).to.not.have.property('id');
             expect(record.children[0]).to.not.have.property('parent_id');
             done();
           });
@@ -135,7 +135,7 @@ module.exports = function(dbConfig) {
         fixtureGenerator.create(dataSpec).then(function(result) {
           // 'children=[string_column]'
           var hydration = [
-            { relation: 'children', hydration: ['string_column', 'parent_id']}
+            { relation: 'children', hydration: ['id', 'string_column', 'parent_id']}
           ];
 
           bookends.hydrate(Parent, hydration).then(function(records) {

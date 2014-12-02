@@ -6,7 +6,7 @@ var Bookends = require('../..');
 
 var fixtureGenerator = null;
 var knex = null;
-var bookends = null;
+var bookends = new Bookends();
 
 var Parent, Child, GrandChild;
 
@@ -17,7 +17,6 @@ module.exports = function(dbConfig) {
     before(function() {
       fixtureGenerator = new sqlFixtures(dbConfig);
       knex = fixtureGenerator.knex;
-      bookends = new Bookends(knex);
 
       var db = bookshelf(knex);
 

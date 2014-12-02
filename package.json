@@ -19,7 +19,6 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^2.3.11",
-    "knex": "^0.7.3",
     "lodash": "^2.4.1"
   },
   "devDependencies": {

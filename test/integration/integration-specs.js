@@ -28,6 +28,9 @@ module.exports = function(dbConfig) {
         tableName: 'child',
         children: function() {
           return this.hasMany(GrandChild, 'child_id');
+        },
+        parent: function() {
+          return this.belongsTo(Parent);
         }
       });
 
@@ -176,6 +179,29 @@ module.exports = function(dbConfig) {
           bookends.hydrate(Parent, hydration).then(function(records) {
             expect(records[0].children[0].children[0].string_column).to.equal('value3');
             expect(records[0].children[0].children[0]).to.not.have.property('child_id');
+            done();
+          });
+        });
+      });
+
+      it('should hydrate a parent relation', function(done) {
+        var dataSpec = {
+          parent: {
+            string_column: 'parent0'
+          },
+          child: {
+            parent_id: 'parent:0',
+            string_column: 'child0'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function() {
+          var hydration = [
+            { relation: 'parent', hydration: ['string_column'] }
+          ];
+
+          bookends.hydrate(Child, hydration).then(function(records) {
+            expect(records[0].parent.string_column).to.equal('parent0');
             done();
           });
         });

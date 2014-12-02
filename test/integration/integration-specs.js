@@ -181,5 +181,80 @@ module.exports = function(dbConfig) {
         });
       });
     });
+
+    describe('aggregation', function() {
+      describe('count', function() {
+        it('should count the relation', function(done) {
+          var dataSpec = {
+            parent: {
+              string_column: 'parent0'
+            },
+            child: [
+              {
+                parent_id: 'parent:0',
+                string_column: 'child0'
+              },
+              {
+                parent_id: 'parent:0',
+                string_column: 'child1'
+              }
+            ]
+          };
+
+          fixtureGenerator.create(dataSpec).then(function(result) {
+            // 'children=count'
+            var hydration = [
+              { relation: 'children', aggregation: 'count' }
+            ];
+
+            bookends.hydrate(Parent, hydration).then(function(records) {
+              var record = records.pop();
+              expect(record.children.count).to.equal(2);
+              done();
+            });
+          });
+        });
+
+        it('should count the second level relation', function(done) {
+          var dataSpec = {
+            parent: {
+              string_column: 'parent0'
+            },
+            child: {
+              parent_id: 'parent:0',
+              string_column: 'child0'
+            },
+            grandchild: [
+              {
+                child_id: 'child:0',
+                string_column: 'grandchild0'
+              },
+              {
+                child_id: 'child:0',
+                string_column: 'grandchild1'
+              }
+            ]
+          };
+
+          fixtureGenerator.create(dataSpec).then(function(result) {
+            // 'children=count'
+            var hydration = [
+              {
+                relation: 'children',
+                hydration: [
+                  { relation: 'children', aggregation: 'count' }
+                ]
+              }
+            ];
+
+            bookends.hydrate(Parent, hydration).then(function(records) {
+              var record = records.pop();
+              expect(record.children[0].children.count).to.equal(2);
+              done();
+            });
+          });
+        });
+      });
+    });
   });
 };

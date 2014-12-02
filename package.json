@@ -1,7 +1,7 @@
 {
   "name": "bookends",
   "version": "0.0.0",
-  "description": "specific, deep data hydration for SQL databases",
+  "description": "Specific, deep data hydration for SQL databases, using Bookshelfjs",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -17,6 +17,11 @@
   ],
   "author": "Matt Greer <matt.e.greer@gmail.com> (http://www.mattgreer.org/)",
   "license": "MIT",
+  "homepage": "https://github.com/city41/bookends",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/city41/bookends.git"
+  },
   "dependencies": {
     "bluebird": "^2.3.11",
     "lodash": "^2.4.1"

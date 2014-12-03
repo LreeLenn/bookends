@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "bluebird": "^2.3.11",
-    "lodash": "^2.4.1"
+    "lodash": "^2.4.1",
+    "pegjs": "^0.8.0"
   },
   "devDependencies": {
     "bookshelf": "^0.7.9",

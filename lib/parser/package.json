@@ -1,0 +1,4 @@
+{
+  "name": "Bookends parser",
+  "main": "./parser.js"
+}

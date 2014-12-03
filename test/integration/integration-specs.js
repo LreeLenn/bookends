@@ -283,6 +283,49 @@ module.exports = function(dbConfig) {
       });
     });
 
+    describe('where', function() {
+      it('should use the where clause', function(done) {
+        var dataSpec = {
+          parent: [{
+            string_column: 'parent0',
+            second_string_column: 'parent0'
+          }, {
+            string_column: 'parent1',
+            second_string_column: 'parent1'
+          }]
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          var where = { id: result.parent[1].id };
+          bookends.hydrate(Parent, where, ['string_column']).then(function(records) {
+            expect(records.length).to.equal(1);
+            expect(records[0].string_column).to.equal('parent1');
+            done();
+          });
+        });
+      });
+
+      it('should turn integers into id based where clauses', function(done) {
+        var dataSpec = {
+          parent: [{
+            string_column: 'parent0',
+            second_string_column: 'parent0'
+          }, {
+            string_column: 'parent1',
+            second_string_column: 'parent1'
+          }]
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          bookends.hydrate(Parent, result.parent[1].id, ['string_column']).then(function(records) {
+            expect(records.length).to.equal(1);
+            expect(records[0].string_column).to.equal('parent1');
+            done();
+          });
+        });
+      });
+    });
+
     describe('aggregation', function() {
       describe('count', function() {
         it('should count the relation', function(done) {

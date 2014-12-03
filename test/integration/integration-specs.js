@@ -21,13 +21,16 @@ module.exports = function(dbConfig) {
       var db = bookshelf(knex);
 
       GrandChild = db.Model.extend({
-        tableName: 'grandchild'
+        tableName: 'grandchild',
+        parent: function() {
+          return this.belongsTo(Child);
+        }
       });
 
       Child = db.Model.extend({
         tableName: 'child',
         children: function() {
-          return this.hasMany(GrandChild, 'child_id');
+          return this.hasMany(GrandChild);
         },
         parent: function() {
           return this.belongsTo(Parent);
@@ -37,7 +40,7 @@ module.exports = function(dbConfig) {
       Parent = db.Model.extend({
         tableName: 'parent',
         children: function() {
-          return this.hasMany(Child, 'parent_id');
+          return this.hasMany(Child);
         }
       });
     });
@@ -202,6 +205,38 @@ module.exports = function(dbConfig) {
 
           bookends.hydrate(Child, hydration).then(function(records) {
             expect(records[0].parent.string_column).to.equal('parent0');
+            done();
+          });
+        });
+      });
+
+      it('should hydrate a grandparent relation', function(done) {
+        var dataSpec = {
+          parent: {
+            string_column: 'parent0'
+          },
+          child: {
+            parent_id: 'parent:0',
+            string_column: 'child0'
+          },
+          grandchild: {
+            child_id: 'child:0',
+            string_column: 'grandchild0'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function() {
+          var hydration = [
+            {
+              relation: 'parent',
+              hydration: [
+                { relation: 'parent', hydration: ['string_column'] }
+              ]
+            }
+          ];
+
+          bookends.hydrate(GrandChild, hydration).then(function(records) {
+            expect(records[0].parent.parent.string_column).to.equal('parent0');
             done();
           });
         });

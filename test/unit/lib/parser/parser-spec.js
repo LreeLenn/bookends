@@ -21,5 +21,15 @@ describe('parser', function() {
         }
       });
     });
+
+    it('should completely ignore whitespace and newlines', function() {
+      var spec = '[ string_column , \r\n\n children = \tcount ]';
+      var parsed = parser.parse(spec);
+
+      expect(parsed).to.eql([
+        'string_column',
+        { relation: 'children', aggregation: { method: 'count' }}
+      ]);
+    });
   });
 });

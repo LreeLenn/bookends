@@ -10,6 +10,14 @@ gulp.task('lint', function() {
   .pipe(jshint.reporter('fail'));
 });
 
+gulp.task('test:unit', ['lint'], function() {
+  return gulp.src([
+    './test/helpers/*.js',
+    './test/unit/**/*.js'
+  ])
+  .pipe(mocha());
+});
+
 gulp.task('delete:sqlite', shell.task(['rm -f ./sqlite-integration-spec.db']));
 
 gulp.task('test:integration:sqlite', ['delete:sqlite'], function() {
@@ -21,6 +29,6 @@ gulp.task('test:integration:sqlite', ['delete:sqlite'], function() {
 });
 
 gulp.task('test', [
-  'lint',
+  'test:unit',
   'test:integration:sqlite'
 ]);

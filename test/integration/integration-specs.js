@@ -37,6 +37,13 @@ module.exports = function(dbConfig) {
         }
       });
 
+      Sibling = db.Model.extend({
+        tableName: 'sibling',
+        sibling: function() {
+          return this.hasOne(Child);
+        }
+      });
+
       Parent = db.Model.extend({
         tableName: 'parent',
         children: function() {
@@ -47,6 +54,7 @@ module.exports = function(dbConfig) {
 
     beforeEach(function(done) {
       var dropPromises = [
+        knex.schema.dropTableIfExists('sibling'),
         knex.schema.dropTableIfExists('grandchild'),
         knex.schema.dropTableIfExists('child'),
         knex.schema.dropTableIfExists('parent')
@@ -62,13 +70,19 @@ module.exports = function(dbConfig) {
             table.increments('id').primary();
             table.string('string_column');
             table.integer('parent_id').references('parent.id');
+            table.integer('sibling_id').references('sibling.id');
           }).then(function() {
             knex.schema.createTable('grandchild', function(table) {
               table.increments('id').primary();
               table.string('string_column');
               table.integer('child_id').references('child.id');
             }).then(function() {
-              done();
+              knex.schema.createTable('sibling', function(table) {
+                table.increments('id').primary();
+                table.string('string_column');
+              }).then(function() {
+                done();
+              });
             });
           });
         });
@@ -237,6 +251,32 @@ module.exports = function(dbConfig) {
 
           bookends.hydrate(GrandChild, hydration).then(function(records) {
             expect(records[0].parent.parent.string_column).to.equal('parent0');
+            done();
+          });
+        });
+      });
+
+      it('should hydrate a sibling relation', function(done) {
+        var dataSpec = {
+          sibling: {
+            string_column: 'sibling0'
+          },
+          child: {
+            sibling_id: 'sibling:0',
+            string_column: 'child0'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          // 'children=[string_column]'
+          var hydration = [
+            { relation: 'sibling', hydration: ['string_column']}
+          ];
+
+          bookends.hydrate(Sibling, hydration).then(function(records) {
+            var record = records.pop();
+            expect(record.id).to.be.a('number');
+            expect(record.sibling.string_column).to.equal('child0');
             done();
           });
         });

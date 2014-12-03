@@ -433,5 +433,53 @@ module.exports = function(dbConfig) {
         });
       });
     });
+
+    describe('custom aggregation', function() {
+      it('should use a custom aggregation', function(done) {
+        var bookendsConfig = {
+          aggregations: {
+            myCustomAgg: {
+              columns: function(spec) {
+                return ['string_column'];
+              },
+              aggregate: function(records, spec) {
+                expect(spec.params).to.eql(['my param']);
+                return _.pluck(records, 'string_column').concat('my custom agg');
+              }
+            }
+          }
+        };
+
+        var bookends = new Bookends(bookendsConfig);
+
+        var dataSpec = {
+          parent: {
+            string_column: 'parent0'
+          },
+          child: [
+            {
+              parent_id: 'parent:0',
+              string_column: 'child0'
+            },
+            {
+              parent_id: 'parent:0',
+              string_column: 'child1'
+            }
+          ]
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          // 'children=count'
+          var hydration = [
+            { relation: 'children', aggregation: 'custom.myCustomAgg', params: ['my param'] }
+          ];
+
+          bookends.hydrate(Parent, hydration).then(function(records) {
+            expect(records[0].children).to.eql(['child0', 'child1', 'my custom agg']);
+            done();
+          });
+        });
+      });
+    });
   });
 };

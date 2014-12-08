@@ -1,3 +1,6 @@
+0.3.0 -- December 8, 2014
+-- aggregations can now specify sub hydrations instead of just column
+
 0.2.0 -- December 8, 2014
 -- added support for orderBy
 

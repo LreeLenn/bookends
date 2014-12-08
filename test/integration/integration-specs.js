@@ -491,11 +491,17 @@ module.exports = function(dbConfig) {
           aggregations: {
             myCustomAgg: {
               hydration: function(spec) {
-                return ['string_column'];
+                return '[string_column,children=count]';
               },
               aggregate: function(records, spec) {
+                // at this point each record should have
+                //  string_column
+                //  children = { count: <number> }
                 expect(spec.aggregation.params).to.eql(['my param']);
-                return _.pluck(records, 'string_column').concat('my custom agg');
+
+                return _.map(records, function(record) {
+                  return record.string_column + '/' + record.children.count;
+                });
               }
             }
           }
@@ -516,6 +522,12 @@ module.exports = function(dbConfig) {
               parent_id: 'parent:0',
               string_column: 'child1'
             }
+          ],
+          grandchild: [
+            {
+              child_id: 'child:0',
+              string_column: 'grandchild0'
+            }
           ]
         };
 
@@ -533,7 +545,7 @@ module.exports = function(dbConfig) {
           ];
 
           bookends.hydrate(Parent, hydration).then(function(records) {
-            expect(records[0].children).to.eql(['child0', 'child1', 'my custom agg']);
+            expect(records[0].children).to.eql(['child0/1', 'child1/0']);
             done();
           });
         });

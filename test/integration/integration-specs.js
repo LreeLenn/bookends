@@ -296,8 +296,11 @@ module.exports = function(dbConfig) {
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          var where = { id: result.parent[1].id };
-          bookends.hydrate(Parent, where, ['string_column']).then(function(records) {
+          var options = {
+            where: { id: result.parent[1].id }
+          };
+
+          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(1);
             expect(records[0].string_column).to.equal('parent1');
             done();
@@ -317,9 +320,57 @@ module.exports = function(dbConfig) {
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          bookends.hydrate(Parent, result.parent[1].id, ['string_column']).then(function(records) {
+          var options = {
+            where: result.parent[1].id
+          };
+
+          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(1);
             expect(records[0].string_column).to.equal('parent1');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('orderBy', function() {
+      beforeEach(function() {
+        this.dataSpec = {
+          parent: [{
+            string_column: 'h'
+          }, {
+            string_column: 'z'
+          }, {
+            string_column: 'a'
+          }, {
+            string_column: 'b'
+          }]
+        };
+      });
+
+      it('should order the records as requested', function(done) {
+        fixtureGenerator.create(this.dataSpec).then(function(result) {
+          var options = { orderBy: ['string_column', 'DESC'] }
+          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+            expect(records.length).to.equal(4);
+            expect(records[0].string_column).to.equal('z');
+            expect(records[1].string_column).to.equal('h');
+            expect(records[2].string_column).to.equal('b');
+            expect(records[3].string_column).to.equal('a');
+            done();
+          });
+        });
+      });
+
+      it('should default an order to ASC', function(done) {
+        fixtureGenerator.create(this.dataSpec).then(function(result) {
+          var options = { orderBy: ['string_column'] }
+          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+            expect(records.length).to.equal(4);
+            expect(records[0].string_column).to.equal('a');
+            expect(records[1].string_column).to.equal('b');
+            expect(records[2].string_column).to.equal('h');
+            expect(records[3].string_column).to.equal('z');
             done();
           });
         });

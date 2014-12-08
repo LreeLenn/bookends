@@ -2,11 +2,11 @@ var _ = require('lodash');
 var collect = require('../../../../lib/aggregations/collect');
 
 describe('collect', function() {
-  describe('columns', function() {
-    it('should use the params as the columns', function() {
+  describe('hydration', function() {
+    it('should use the params as the hydration', function() {
       var spec = { aggregation: { params: ['a'] } };
 
-      expect(collect.columns(spec)).to.eql(['a']);
+      expect(collect.hydration(spec)).to.eql(['a']);
     });
   });
 

@@ -350,7 +350,7 @@ module.exports = function(dbConfig) {
 
       it('should order the records as requested', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
-          var options = { orderBy: ['string_column', 'DESC'] }
+          var options = { orderBy: ['string_column', 'DESC'] };
           bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('z');
@@ -364,7 +364,7 @@ module.exports = function(dbConfig) {
 
       it('should default an order to ASC', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
-          var options = { orderBy: ['string_column'] }
+          var options = { orderBy: ['string_column'] };
           bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('a');
@@ -490,7 +490,7 @@ module.exports = function(dbConfig) {
         var bookendsConfig = {
           aggregations: {
             myCustomAgg: {
-              columns: function(spec) {
+              hydration: function(spec) {
                 return ['string_column'];
               },
               aggregate: function(records, spec) {

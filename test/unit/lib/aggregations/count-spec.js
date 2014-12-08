@@ -2,9 +2,9 @@ var _ = require('lodash');
 var count = require('../../../../lib/aggregations/count');
 
 describe('count', function() {
-  describe('columns', function() {
+  describe('hydration', function() {
     it('should specify the id column', function() {
-      expect(count.columns()).to.eql(['id']);
+      expect(count.hydration()).to.eql(['id']);
     });
   });
 

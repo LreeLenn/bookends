@@ -1,3 +1,10 @@
+0.6.0 -- December 9, 2014
+-- support for offset, limit and totalCount
+
+0.5.0 -- December 8, 2014
+-- returning the result as an object with a records property.
+   This by itself offered no real gain, but set up for 0.6.0
+
 0.4.0 -- December 8, 2014
 -- added single option, allowing return of only one record
 

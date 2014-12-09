@@ -8,7 +8,7 @@ var fixtureGenerator = null;
 var knex = null;
 var bookends = new Bookends();
 
-var Parent, Child, GrandChild;
+var Root, LevelOne, LevelTwo;
 
 module.exports = function(dbConfig) {
   describe('bookends', function() {
@@ -20,64 +20,64 @@ module.exports = function(dbConfig) {
 
       var db = bookshelf(knex);
 
-      GrandChild = db.Model.extend({
-        tableName: 'grandchild',
-        parent: function() {
-          return this.belongsTo(Child);
+      LevelTwo = db.Model.extend({
+        tableName: 'leveltwo',
+        levelOne: function() {
+          return this.belongsTo(LevelOne);
         }
       });
 
-      Child = db.Model.extend({
-        tableName: 'child',
-        children: function() {
-          return this.hasMany(GrandChild);
+      LevelOne = db.Model.extend({
+        tableName: 'levelone',
+        levelTwos: function() {
+          return this.hasMany(LevelTwo);
         },
-        parent: function() {
-          return this.belongsTo(Parent);
+        root: function() {
+          return this.belongsTo(Root);
         }
       });
 
-      Sibling = db.Model.extend({
-        tableName: 'sibling',
-        sibling: function() {
-          return this.hasOne(Child);
+      LevelOneB = db.Model.extend({
+        tableName: 'leveloneb',
+        levelOne: function() {
+          return this.hasOne(LevelOne);
         }
       });
 
-      Parent = db.Model.extend({
-        tableName: 'parent',
-        children: function() {
-          return this.hasMany(Child);
+      Root = db.Model.extend({
+        tableName: 'root',
+        levelOnes: function() {
+          return this.hasMany(LevelOne);
         }
       });
     });
 
     beforeEach(function(done) {
       var dropPromises = [
-        knex.schema.dropTableIfExists('sibling'),
-        knex.schema.dropTableIfExists('grandchild'),
-        knex.schema.dropTableIfExists('child'),
-        knex.schema.dropTableIfExists('parent')
+        knex.schema.dropTableIfExists('leveloneb'),
+        knex.schema.dropTableIfExists('leveltwo'),
+        knex.schema.dropTableIfExists('levelone'),
+        knex.schema.dropTableIfExists('root')
       ];
 
       bluebird.all(dropPromises).then(function() {
-        knex.schema.createTable('parent', function(table) {
+        knex.schema.createTable('root', function(table) {
           table.increments('id').primary();
           table.string('string_column');
           table.string('second_string_column');
         }).then(function() {
-          knex.schema.createTable('child', function(table) {
+          knex.schema.createTable('levelone', function(table) {
             table.increments('id').primary();
             table.string('string_column');
-            table.integer('parent_id').references('parent.id');
-            table.integer('sibling_id').references('sibling.id');
+            table.integer('root_id').references('root.id');
+            table.integer('leveloneb_id').references('leveloneb.id');
           }).then(function() {
-            knex.schema.createTable('grandchild', function(table) {
+            knex.schema.createTable('leveltwo', function(table) {
               table.increments('id').primary();
               table.string('string_column');
-              table.integer('child_id').references('child.id');
+              table.integer('levelone_id').references('levelone.id');
             }).then(function() {
-              knex.schema.createTable('sibling', function(table) {
+              knex.schema.createTable('leveloneb', function(table) {
                 table.increments('id').primary();
                 table.string('string_column');
               }).then(function() {
@@ -96,14 +96,14 @@ module.exports = function(dbConfig) {
     describe('hydration', function() {
       it('should do a simple hydration', function(done) {
         var dataSpec = {
-          parent: {
+          root: {
             string_column: 'value1',
             second_string_column: 'value2'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          bookends.hydrate(Parent, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, ['string_column']).then(function(records) {
             expect(records.length).to.equal(1);
             expect(records[0].string_column).to.equal('value1');
             expect(records[0]).to.not.have.property('second_string_column');
@@ -112,145 +112,146 @@ module.exports = function(dbConfig) {
         });
       });
 
-      it('should hydrate a child relation with no unexpected columns returned', function(done) {
+      it('should hydrate a levelone relation with no unexpected columns returned', function(done) {
         var dataSpec = {
-          parent: {
+          root: {
               string_column: 'value1'
           },
-          child: {
-            parent_id: 'parent:0',
+          levelone: {
+            root_id: 'root:0',
             string_column: 'value2'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'children=[string_column]'
+          // 'leveloneren=[string_column]'
           var hydration = [
-            { relation: 'children', hydration: ['string_column']}
+            { relation: 'levelOnes', hydration: ['string_column']}
           ];
 
-          bookends.hydrate(Parent, hydration).then(function(records) {
+          bookends.hydrate(Root, hydration).then(function(records) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
-            expect(record.children[0].string_column).to.equal('value2');
-            expect(record.children[0]).to.not.have.property('id');
-            expect(record.children[0]).to.not.have.property('parent_id');
+            expect(record.levelOnes[0].string_column).to.equal('value2');
+            expect(record.levelOnes[0]).to.not.have.property('id');
+            expect(record.levelOnes[0]).to.not.have.property('root_id');
             done();
           });
         });
       });
 
-      it('should hydrate a child relation and return the foreign key column if it was requested', function(done) {
+      it('should hydrate a levelone relation and return the foreign key column if it was requested', function(done) {
         var dataSpec = {
-          parent: {
+          root: {
             string_column: 'value1'
           },
-          child: {
-            parent_id: 'parent:0',
+          levelone: {
+            root_id: 'root:0',
             string_column: 'value2'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'children=[string_column]'
+          // 'leveloneren=[string_column]'
           var hydration = [
-            { relation: 'children', hydration: ['id', 'string_column', 'parent_id']}
+            { relation: 'levelOnes', hydration: ['id', 'string_column', 'root_id']}
           ];
 
-          bookends.hydrate(Parent, hydration).then(function(records) {
+          bookends.hydrate(Root, hydration).then(function(records) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
-            expect(record.children[0].string_column).to.equal('value2');
-            expect(record.children[0].id).to.be.a('number');
-            expect(record.children[0].parent_id).to.equal(record.id);
+            expect(record.levelOnes[0].string_column).to.equal('value2');
+            expect(record.levelOnes[0].id).to.be.a('number');
+            expect(record.levelOnes[0].root_id).to.equal(record.id);
             done();
           });
         });
       });
 
-      it('should hydrate a second level relation', function(done) {
+      it('should hydrate a second level child relation', function(done) {
         var dataSpec = {
-          parent: {
+          root: {
             string_column: 'value1'
           },
-          child: {
-            parent_id: 'parent:0',
+          levelone: {
+            root_id: 'root:0',
             string_column: 'value2'
           },
-          grandchild: {
-            child_id: 'child:0',
+          leveltwo: {
+            levelone_id: 'levelone:0',
             string_column: 'value3'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'children=[string_column,children=[string_column]]'
+          // 'leveloneren=[string_column,leveloneren=[string_column]]'
           var hydration = [{
-            relation: 'children',
+            relation: 'levelOnes',
             hydration: [
               'string_column',
-              { relation: 'children', hydration: ['string_column']}
+              { relation: 'levelTwos', hydration: ['string_column']}
             ]
           }];
 
-          bookends.hydrate(Parent, hydration).then(function(records) {
-            expect(records[0].children[0].children[0].string_column).to.equal('value3');
-            expect(records[0].children[0].children[0]).to.not.have.property('child_id');
+          debugger;
+          bookends.hydrate(Root, hydration).then(function(records) {
+            expect(records[0].levelOnes[0].levelTwos[0].string_column).to.equal('value3');
+            expect(records[0].levelOnes[0].levelTwos[0]).to.not.have.property('levelone_id');
             done();
           });
         });
       });
 
-      it('should hydrate a parent relation', function(done) {
+      it('should hydrate a root relation', function(done) {
         var dataSpec = {
-          parent: {
-            string_column: 'parent0'
+          root: {
+            string_column: 'root0'
           },
-          child: {
-            parent_id: 'parent:0',
-            string_column: 'child0'
+          levelone: {
+            root_id: 'root:0',
+            string_column: 'levelone0'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function() {
           var hydration = [
-            { relation: 'parent', hydration: ['string_column'] }
+            { relation: 'root', hydration: ['string_column'] }
           ];
 
-          bookends.hydrate(Child, hydration).then(function(records) {
-            expect(records[0].parent.string_column).to.equal('parent0');
+          bookends.hydrate(LevelOne, hydration).then(function(records) {
+            expect(records[0].root.string_column).to.equal('root0');
             done();
           });
         });
       });
 
-      it('should hydrate a grandparent relation', function(done) {
+      it('should hydrate a second level parent relation', function(done) {
         var dataSpec = {
-          parent: {
-            string_column: 'parent0'
+          root: {
+            string_column: 'root0'
           },
-          child: {
-            parent_id: 'parent:0',
-            string_column: 'child0'
+          levelone: {
+            root_id: 'root:0',
+            string_column: 'levelone0'
           },
-          grandchild: {
-            child_id: 'child:0',
-            string_column: 'grandchild0'
+          leveltwo: {
+            levelone_id: 'levelone:0',
+            string_column: 'leveltwo0'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function() {
           var hydration = [
             {
-              relation: 'parent',
+              relation: 'levelOne',
               hydration: [
-                { relation: 'parent', hydration: ['string_column'] }
+                { relation: 'root', hydration: ['string_column'] }
               ]
             }
           ];
 
-          bookends.hydrate(GrandChild, hydration).then(function(records) {
-            expect(records[0].parent.parent.string_column).to.equal('parent0');
+          bookends.hydrate(LevelTwo, hydration).then(function(records) {
+            expect(records[0].levelOne.root.string_column).to.equal('root0');
             done();
           });
         });
@@ -258,25 +259,48 @@ module.exports = function(dbConfig) {
 
       it('should hydrate a sibling relation', function(done) {
         var dataSpec = {
-          sibling: {
-            string_column: 'sibling0'
+          leveloneb: {
+            string_column: 'leveloneb0'
           },
-          child: {
-            sibling_id: 'sibling:0',
-            string_column: 'child0'
+          levelone: {
+            leveloneb_id: 'leveloneb:0',
+            string_column: 'levelone0'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'children=[string_column]'
+          // 'leveloneren=[string_column]'
           var hydration = [
-            { relation: 'sibling', hydration: ['string_column']}
+            { relation: 'levelOne', hydration: ['string_column']}
           ];
 
-          bookends.hydrate(Sibling, hydration).then(function(records) {
+          bookends.hydrate(LevelOneB, hydration).then(function(records) {
             var record = records.pop();
             expect(record.id).to.be.a('number');
-            expect(record.sibling.string_column).to.equal('child0');
+            expect(record.levelOne.string_column).to.equal('levelone0');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('single', function() {
+      it('should return the first record if single is specified', function(done) {
+        var dataSpec = {
+          root: [{
+            string_column: 'root0'
+          }, {
+            string_column: 'root1'
+          }]
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          var options = {
+            single: true
+          };
+
+          bookends.hydrate(Root, options, ['string_column']).then(function(record) {
+            expect(record.string_column).to.equal('root0');
             done();
           });
         });
@@ -286,23 +310,23 @@ module.exports = function(dbConfig) {
     describe('where', function() {
       it('should use the where clause', function(done) {
         var dataSpec = {
-          parent: [{
-            string_column: 'parent0',
-            second_string_column: 'parent0'
+          root: [{
+            string_column: 'root0',
+            second_string_column: 'root0'
           }, {
-            string_column: 'parent1',
-            second_string_column: 'parent1'
+            string_column: 'root1',
+            second_string_column: 'root1'
           }]
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
           var options = {
-            where: { id: result.parent[1].id }
+            where: { id: result.root[1].id }
           };
 
-          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(1);
-            expect(records[0].string_column).to.equal('parent1');
+            expect(records[0].string_column).to.equal('root1');
             done();
           });
         });
@@ -310,23 +334,23 @@ module.exports = function(dbConfig) {
 
       it('should turn integers into id based where clauses', function(done) {
         var dataSpec = {
-          parent: [{
-            string_column: 'parent0',
-            second_string_column: 'parent0'
+          root: [{
+            string_column: 'root0',
+            second_string_column: 'root0'
           }, {
-            string_column: 'parent1',
-            second_string_column: 'parent1'
+            string_column: 'root1',
+            second_string_column: 'root1'
           }]
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
           var options = {
-            where: result.parent[1].id
+            where: result.root[1].id
           };
 
-          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(1);
-            expect(records[0].string_column).to.equal('parent1');
+            expect(records[0].string_column).to.equal('root1');
             done();
           });
         });
@@ -336,7 +360,7 @@ module.exports = function(dbConfig) {
     describe('orderBy', function() {
       beforeEach(function() {
         this.dataSpec = {
-          parent: [{
+          root: [{
             string_column: 'h'
           }, {
             string_column: 'z'
@@ -351,7 +375,7 @@ module.exports = function(dbConfig) {
       it('should order the records as requested', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
           var options = { orderBy: ['string_column', 'DESC'] };
-          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('z');
             expect(records[1].string_column).to.equal('h');
@@ -365,7 +389,7 @@ module.exports = function(dbConfig) {
       it('should default an order to ASC', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
           var options = { orderBy: ['string_column'] };
-          bookends.hydrate(Parent, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('a');
             expect(records[1].string_column).to.equal('b');
@@ -381,30 +405,30 @@ module.exports = function(dbConfig) {
       describe('count', function() {
         it('should count the relation', function(done) {
           var dataSpec = {
-            parent: {
-              string_column: 'parent0'
+            root: {
+              string_column: 'root0'
             },
-            child: [
+            levelone: [
               {
-                parent_id: 'parent:0',
-                string_column: 'child0'
+                root_id: 'root:0',
+                string_column: 'levelone0'
               },
               {
-                parent_id: 'parent:0',
-                string_column: 'child1'
+                root_id: 'root:0',
+                string_column: 'levelone1'
               }
             ]
           };
 
           fixtureGenerator.create(dataSpec).then(function(result) {
-            // 'children=count'
+            // 'leveloneren=count'
             var hydration = [
-              { relation: 'children', aggregation: { method: 'count'} }
+              { relation: 'levelOnes', aggregation: { method: 'count'} }
             ];
 
-            bookends.hydrate(Parent, hydration).then(function(records) {
+            bookends.hydrate(Root, hydration).then(function(records) {
               var record = records.pop();
-              expect(record.children.count).to.equal(2);
+              expect(record.levelOnes.count).to.equal(2);
               done();
             });
           });
@@ -412,39 +436,39 @@ module.exports = function(dbConfig) {
 
         it('should count the second level relation', function(done) {
           var dataSpec = {
-            parent: {
-              string_column: 'parent0'
+            root: {
+              string_column: 'root0'
             },
-            child: {
-              parent_id: 'parent:0',
-              string_column: 'child0'
+            levelone: {
+              root_id: 'root:0',
+              string_column: 'levelone0'
             },
-            grandchild: [
+            leveltwo: [
               {
-                child_id: 'child:0',
-                string_column: 'grandchild0'
+                levelone_id: 'levelone:0',
+                string_column: 'leveltwo0'
               },
               {
-                child_id: 'child:0',
-                string_column: 'grandchild1'
+                levelone_id: 'levelone:0',
+                string_column: 'leveltwo1'
               }
             ]
           };
 
           fixtureGenerator.create(dataSpec).then(function(result) {
-            // 'children=count'
+            // 'leveloneren=count'
             var hydration = [
               {
-                relation: 'children',
+                relation: 'levelOnes',
                 hydration: [
-                  { relation: 'children', aggregation: { method: 'count'} }
+                  { relation: 'levelTwos', aggregation: { method: 'count'} }
                 ]
               }
             ];
 
-            bookends.hydrate(Parent, hydration).then(function(records) {
+            bookends.hydrate(Root, hydration).then(function(records) {
               var record = records.pop();
-              expect(record.children[0].children.count).to.equal(2);
+              expect(record.levelOnes[0].levelTwos.count).to.equal(2);
               done();
             });
           });
@@ -454,30 +478,30 @@ module.exports = function(dbConfig) {
       describe('collect', function() {
         it('should collect the relation', function(done) {
           var dataSpec = {
-            parent: {
-              string_column: 'parent0'
+            root: {
+              string_column: 'root0'
             },
-            child: [
+            levelone: [
               {
-                parent_id: 'parent:0',
-                string_column: 'child0'
+                root_id: 'root:0',
+                string_column: 'levelone0'
               },
               {
-                parent_id: 'parent:0',
-                string_column: 'child1'
+                root_id: 'root:0',
+                string_column: 'levelone1'
               }
             ]
           };
 
           fixtureGenerator.create(dataSpec).then(function(result) {
-            // 'children=collect(string_column)'
+            // 'leveloneren=collect(string_column)'
             var hydration = [
-              { relation: 'children', aggregation: { method: 'collect', params: ['string_column'] }}
+              { relation: 'levelOnes', aggregation: { method: 'collect', params: ['string_column'] }}
             ];
 
-            bookends.hydrate(Parent, hydration).then(function(records) {
+            bookends.hydrate(Root, hydration).then(function(records) {
               var record = records.pop();
-              expect(record.children).to.eql(['child0', 'child1']);
+              expect(record.levelOnes).to.eql(['levelone0', 'levelone1']);
               done();
             });
           });
@@ -491,16 +515,16 @@ module.exports = function(dbConfig) {
           aggregations: {
             myCustomAgg: {
               hydration: function(spec) {
-                return '[string_column,children=count]';
+                return '[string_column,levelTwos=count]';
               },
               aggregate: function(records, spec) {
                 // at this point each record should have
                 //  string_column
-                //  children = { count: <number> }
+                //  leveloneren = { count: <number> }
                 expect(spec.aggregation.params).to.eql(['my param']);
 
                 return _.map(records, function(record) {
-                  return record.string_column + '/' + record.children.count;
+                  return record.string_column + '/' + record.levelTwos.count;
                 });
               }
             }
@@ -510,32 +534,32 @@ module.exports = function(dbConfig) {
         var bookends = new Bookends(bookendsConfig);
 
         var dataSpec = {
-          parent: {
-            string_column: 'parent0'
+          root: {
+            string_column: 'root0'
           },
-          child: [
+          levelone: [
             {
-              parent_id: 'parent:0',
-              string_column: 'child0'
+              root_id: 'root:0',
+              string_column: 'levelone0'
             },
             {
-              parent_id: 'parent:0',
-              string_column: 'child1'
+              root_id: 'root:0',
+              string_column: 'levelone1'
             }
           ],
-          grandchild: [
+          leveltwo: [
             {
-              child_id: 'child:0',
-              string_column: 'grandchild0'
+              levelone_id: 'levelone:0',
+              string_column: 'leveltwo0'
             }
           ]
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'children=count'
+          // 'leveloneren=count'
           var hydration = [
             {
-              relation: 'children',
+              relation: 'levelOnes',
               aggregation: {
                 custom: true,
                 method: 'myCustomAgg',
@@ -544,8 +568,8 @@ module.exports = function(dbConfig) {
             }
           ];
 
-          bookends.hydrate(Parent, hydration).then(function(records) {
-            expect(records[0].children).to.eql(['child0/1', 'child1/0']);
+          bookends.hydrate(Root, hydration).then(function(records) {
+            expect(records[0].levelOnes).to.eql(['levelone0/1', 'levelone1/0']);
             done();
           });
         });
@@ -555,28 +579,28 @@ module.exports = function(dbConfig) {
     describe('hydration as a string', function() {
       it('should work with hydration strings', function(done) {
         var dataSpec = {
-          parent: {
-            string_column: 'parent0'
+          root: {
+            string_column: 'root0'
           },
-          child: [
+          levelone: [
             {
-              parent_id: 'parent:0',
-              string_column: 'child0'
+              root_id: 'root:0',
+              string_column: 'levelone0'
             },
             {
-              parent_id: 'parent:0',
-              string_column: 'child1'
+              root_id: 'root:0',
+              string_column: 'levelone1'
             }
           ]
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          var hydration = '[string_column,children=collect(string_column)]';
+          var hydration = '[string_column,levelOnes=collect(string_column)]';
 
-          bookends.hydrate(Parent, hydration).then(function(records) {
+          bookends.hydrate(Root, hydration).then(function(records) {
             var record = records.pop();
-            expect(record.string_column).to.equal('parent0');
-            expect(record.children).to.eql(['child0', 'child1']);
+            expect(record.string_column).to.equal('root0');
+            expect(record.levelOnes).to.eql(['levelone0', 'levelone1']);
             done();
           });
         });

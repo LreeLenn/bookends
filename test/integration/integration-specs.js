@@ -113,6 +113,46 @@ module.exports = function(dbConfig) {
         });
       });
 
+      it('should have a reasonable default if no hydration provided', function(done) {
+        var dataSpec = {
+          root: {
+            string_column: 'value1',
+            second_string_column: 'value2'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          bookends.hydrate(Root).then(function(result) {
+            var records = result.records;
+            expect(records.length).to.equal(1);
+            expect(records[0].string_column).to.equal('value1');
+            expect(records[0].second_string_column).to.equal('value2');
+            expect(records[0].id).to.be.a('number');
+            done();
+          });
+        });
+      });
+
+      it('should allow the second param to be options', function(done) {
+        var dataSpec = {
+          root: [
+            { string_column: 'root0' },
+            { string_column: 'root1' }
+          ]
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          var options = { where: { string_column: 'root1' }};
+
+          bookends.hydrate(Root, options).then(function(result) {
+            var records = result.records;
+            expect(records.length).to.equal(1);
+            expect(records[0].string_column).to.equal('root1');
+            done();
+          });
+        });
+      });
+
       it('should hydrate a levelone relation with no unexpected columns returned', function(done) {
         var dataSpec = {
           root: {

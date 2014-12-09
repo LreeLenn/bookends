@@ -103,7 +103,8 @@ module.exports = function(dbConfig) {
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          bookends.hydrate(Root, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, ['string_column']).then(function(result) {
+            var records = result.records;
             expect(records.length).to.equal(1);
             expect(records[0].string_column).to.equal('value1');
             expect(records[0]).to.not.have.property('second_string_column');
@@ -129,8 +130,8 @@ module.exports = function(dbConfig) {
             { relation: 'levelOnes', hydration: ['string_column']}
           ];
 
-          bookends.hydrate(Root, hydration).then(function(records) {
-            var record = records.pop();
+          bookends.hydrate(Root, hydration).then(function(result) {
+            var record = result.records.pop();
             expect(record.id).to.be.a('number');
             expect(record.levelOnes[0].string_column).to.equal('value2');
             expect(record.levelOnes[0]).to.not.have.property('id');
@@ -157,8 +158,8 @@ module.exports = function(dbConfig) {
             { relation: 'levelOnes', hydration: ['id', 'string_column', 'root_id']}
           ];
 
-          bookends.hydrate(Root, hydration).then(function(records) {
-            var record = records.pop();
+          bookends.hydrate(Root, hydration).then(function(result) {
+            var record = result.records.pop();
             expect(record.id).to.be.a('number');
             expect(record.levelOnes[0].string_column).to.equal('value2');
             expect(record.levelOnes[0].id).to.be.a('number');
@@ -193,10 +194,9 @@ module.exports = function(dbConfig) {
             ]
           }];
 
-          debugger;
-          bookends.hydrate(Root, hydration).then(function(records) {
-            expect(records[0].levelOnes[0].levelTwos[0].string_column).to.equal('value3');
-            expect(records[0].levelOnes[0].levelTwos[0]).to.not.have.property('levelone_id');
+          bookends.hydrate(Root, hydration).then(function(result) {
+            expect(result.records[0].levelOnes[0].levelTwos[0].string_column).to.equal('value3');
+            expect(result.records[0].levelOnes[0].levelTwos[0]).to.not.have.property('levelone_id');
             done();
           });
         });
@@ -218,8 +218,8 @@ module.exports = function(dbConfig) {
             { relation: 'root', hydration: ['string_column'] }
           ];
 
-          bookends.hydrate(LevelOne, hydration).then(function(records) {
-            expect(records[0].root.string_column).to.equal('root0');
+          bookends.hydrate(LevelOne, hydration).then(function(result) {
+            expect(result.records[0].root.string_column).to.equal('root0');
             done();
           });
         });
@@ -250,8 +250,8 @@ module.exports = function(dbConfig) {
             }
           ];
 
-          bookends.hydrate(LevelTwo, hydration).then(function(records) {
-            expect(records[0].levelOne.root.string_column).to.equal('root0');
+          bookends.hydrate(LevelTwo, hydration).then(function(result) {
+            expect(result.records[0].levelOne.root.string_column).to.equal('root0');
             done();
           });
         });
@@ -274,8 +274,8 @@ module.exports = function(dbConfig) {
             { relation: 'levelOne', hydration: ['string_column']}
           ];
 
-          bookends.hydrate(LevelOneB, hydration).then(function(records) {
-            var record = records.pop();
+          bookends.hydrate(LevelOneB, hydration).then(function(result) {
+            var record = result.records.pop();
             expect(record.id).to.be.a('number');
             expect(record.levelOne.string_column).to.equal('levelone0');
             done();
@@ -324,9 +324,9 @@ module.exports = function(dbConfig) {
             where: { id: result.root[1].id }
           };
 
-          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
-            expect(records.length).to.equal(1);
-            expect(records[0].string_column).to.equal('root1');
+          bookends.hydrate(Root, options, ['string_column']).then(function(result) {
+            expect(result.records.length).to.equal(1);
+            expect(result.records[0].string_column).to.equal('root1');
             done();
           });
         });
@@ -348,9 +348,9 @@ module.exports = function(dbConfig) {
             where: result.root[1].id
           };
 
-          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
-            expect(records.length).to.equal(1);
-            expect(records[0].string_column).to.equal('root1');
+          bookends.hydrate(Root, options, ['string_column']).then(function(result) {
+            expect(result.records.length).to.equal(1);
+            expect(result.records[0].string_column).to.equal('root1');
             done();
           });
         });
@@ -375,7 +375,8 @@ module.exports = function(dbConfig) {
       it('should order the records as requested', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
           var options = { orderBy: ['string_column', 'DESC'] };
-          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(result) {
+            var records = result.records;
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('z');
             expect(records[1].string_column).to.equal('h');
@@ -389,7 +390,8 @@ module.exports = function(dbConfig) {
       it('should default an order to ASC', function(done) {
         fixtureGenerator.create(this.dataSpec).then(function(result) {
           var options = { orderBy: ['string_column'] };
-          bookends.hydrate(Root, options, ['string_column']).then(function(records) {
+          bookends.hydrate(Root, options, ['string_column']).then(function(result) {
+            var records = result.records;
             expect(records.length).to.equal(4);
             expect(records[0].string_column).to.equal('a');
             expect(records[1].string_column).to.equal('b');
@@ -426,8 +428,8 @@ module.exports = function(dbConfig) {
               { relation: 'levelOnes', aggregation: { method: 'count'} }
             ];
 
-            bookends.hydrate(Root, hydration).then(function(records) {
-              var record = records.pop();
+            bookends.hydrate(Root, hydration).then(function(result) {
+              var record = result.records.pop();
               expect(record.levelOnes.count).to.equal(2);
               done();
             });
@@ -466,8 +468,8 @@ module.exports = function(dbConfig) {
               }
             ];
 
-            bookends.hydrate(Root, hydration).then(function(records) {
-              var record = records.pop();
+            bookends.hydrate(Root, hydration).then(function(result) {
+              var record = result.records.pop();
               expect(record.levelOnes[0].levelTwos.count).to.equal(2);
               done();
             });
@@ -499,8 +501,8 @@ module.exports = function(dbConfig) {
               { relation: 'levelOnes', aggregation: { method: 'collect', params: ['string_column'] }}
             ];
 
-            bookends.hydrate(Root, hydration).then(function(records) {
-              var record = records.pop();
+            bookends.hydrate(Root, hydration).then(function(result) {
+              var record = result.records.pop();
               expect(record.levelOnes).to.eql(['levelone0', 'levelone1']);
               done();
             });
@@ -568,8 +570,8 @@ module.exports = function(dbConfig) {
             }
           ];
 
-          bookends.hydrate(Root, hydration).then(function(records) {
-            expect(records[0].levelOnes).to.eql(['levelone0/1', 'levelone1/0']);
+          bookends.hydrate(Root, hydration).then(function(result) {
+            expect(result.records[0].levelOnes).to.eql(['levelone0/1', 'levelone1/0']);
             done();
           });
         });
@@ -597,8 +599,8 @@ module.exports = function(dbConfig) {
         fixtureGenerator.create(dataSpec).then(function(result) {
           var hydration = '[string_column,levelOnes=collect(string_column)]';
 
-          bookends.hydrate(Root, hydration).then(function(records) {
-            var record = records.pop();
+          bookends.hydrate(Root, hydration).then(function(result) {
+            var record = result.records.pop();
             expect(record.string_column).to.equal('root0');
             expect(record.levelOnes).to.eql(['levelone0', 'levelone1']);
             done();

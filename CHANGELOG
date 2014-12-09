@@ -1,3 +1,7 @@
+0.8.0 -- December 9, 2014
+-- support for default hydrations per model
+    ie, you can configure bookends "if this model ever gets hydrated, be sure to always hydrate this stuff"
+
 0.7.0 -- December 9, 2014
 -- support options and hydration both being optional
    options defaults to {}

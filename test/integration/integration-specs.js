@@ -713,5 +713,32 @@ module.exports = function(dbConfig) {
         });
       });
     });
+
+    describe('default hydrations', function() {
+      it('should merge in default hydrations', function(done) {
+        var bookends = new Bookends({
+          defaultHydrations: [{
+            model: Root,
+            hydration: '[second_string_column]'
+          }]
+        });
+
+        var dataSpec = {
+          root: {
+            string_column: 'root0',
+            second_string_column: 'rootSecond0'
+          }
+        };
+
+        fixtureGenerator.create(dataSpec).then(function(result) {
+          bookends.hydrate(Root, '[string_column]').then(function(result) {
+            var record = result.records.pop();
+            expect(record.string_column).to.equal('root0');
+            expect(record.second_string_column).to.equal('rootSecond0');
+            done();
+          });
+        });
+      });
+    });
   });
 };

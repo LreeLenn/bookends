@@ -1,3 +1,6 @@
+0.10.1 -- December 10, 2014
+-- bug fix: root level belongsTo relations not querying correct foreign key columns
+
 0.10.0 -- December 10, 2014
 -- support for multiple where clauses, they are ANDed together
 

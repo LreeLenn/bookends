@@ -156,24 +156,26 @@ module.exports = function(dbConfig) {
       it('should hydrate a levelone relation with no unexpected columns returned', function(done) {
         var dataSpec = {
           root: {
-              string_column: 'value1'
+              string_column: 'root0'
           },
           levelone: {
             root_id: 'root:0',
-            string_column: 'value2'
+            string_column: 'levelone0'
           }
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
           // 'leveloneren=[string_column]'
           var hydration = [
+            'string_column',
             { relation: 'levelOnes', hydration: ['string_column']}
           ];
 
           bookends.hydrate(Root, hydration).then(function(result) {
             var record = result.records.pop();
             expect(record.id).to.be.a('number');
-            expect(record.levelOnes[0].string_column).to.equal('value2');
+            expect(record.string_column).to.equal('root0')
+            expect(record.levelOnes[0].string_column).to.equal('levelone0');
             expect(record.levelOnes[0]).to.not.have.property('id');
             expect(record.levelOnes[0]).to.not.have.property('root_id');
             done();
@@ -242,7 +244,7 @@ module.exports = function(dbConfig) {
         });
       });
 
-      it('should hydrate a root relation', function(done) {
+      it('should hydrate a belongsTo relation', function(done) {
         var dataSpec = {
           root: {
             string_column: 'root0'
@@ -255,11 +257,14 @@ module.exports = function(dbConfig) {
 
         fixtureGenerator.create(dataSpec).then(function() {
           var hydration = [
+            'string_column',
             { relation: 'root', hydration: ['string_column'] }
           ];
 
           bookends.hydrate(LevelOne, hydration).then(function(result) {
-            expect(result.records[0].root.string_column).to.equal('root0');
+            var record = result.records.pop();
+            expect(record.string_column).to.equal('levelone0');
+            expect(record.root.string_column).to.equal('root0');
             done();
           });
         });

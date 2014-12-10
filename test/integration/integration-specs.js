@@ -258,13 +258,20 @@ module.exports = function(dbConfig) {
         fixtureGenerator.create(dataSpec).then(function() {
           var hydration = [
             'string_column',
-            { relation: 'root', hydration: ['string_column'] }
+            {
+              relation: 'root',
+              hydration: [
+                'string_column',
+                { relation: 'levelOnes', hydration: ['string_column'] }
+              ]
+            }
           ];
 
           bookends.hydrate(LevelOne, hydration).then(function(result) {
             var record = result.records.pop();
             expect(record.string_column).to.equal('levelone0');
             expect(record.root.string_column).to.equal('root0');
+            expect(record.root.levelOnes[0].string_column).to.equal('levelone0');
             done();
           });
         });

@@ -549,6 +549,35 @@ module.exports = function(dbConfig) {
           });
         });
       });
+
+      describe('sum', function() {
+        it('should sum the relation', function(done) {
+          var dataSpec = {
+            root: {
+              string_column: 'root0'
+            },
+            levelone: [
+            {
+              root_id: 'root:0',
+              string_column: '4'
+            },
+            {
+              root_id: 'root:0',
+              string_column: '7'
+            }
+            ]
+          };
+
+          fixtureGenerator.create(dataSpec).then(function(result) {
+            var hydration = '[levelOnes=sum(string_column)]'
+
+            bookends.hydrate(Root, hydration).then(function(result) {
+              expect(result.records[0].levelOnes).to.eql({ sum: 11 });
+              done();
+            });
+          });
+        });
+      });
     });
 
     describe('custom aggregation', function() {

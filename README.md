@@ -9,3 +9,7 @@ This library is young and currently very experimental, but it's based on code I 
 These are not the droids you're looking for just yet.
 
 Once Bookends shapes itself up, I'll expand this README and tweet, write a [blog post](http://mattgreer.org), etc.
+
+## lots of releases, many versions
+
+I'm really following semantic versioning to the letter, which basically says for 0.x releases to go crazy and use this time to figure out the overall API. Each new 0.x release is essentially one more feature, even if it's just a tiny feature. Once 1.x is hit, versioning will settle down.

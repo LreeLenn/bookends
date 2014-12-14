@@ -82,7 +82,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
         bookends.hydrate(Root, hydration).then(function(result) {
           var record = result.records.pop();
           expect(record.id).to.be.a('number');
-          expect(record.string_column).to.equal('root0')
+          expect(record.string_column).to.equal('root0');
           expect(record.levelOnes[0].string_column).to.equal('levelone0');
           expect(record.levelOnes[0]).to.not.have.property('id');
           expect(record.levelOnes[0]).to.not.have.property('root_id');

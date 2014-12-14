@@ -51,12 +51,13 @@ module.exports = function(dbConfig) {
     });
 
     describe('specs', function() {
-      require('./specs/hydration')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
-      require('./specs/where')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
-      require('./specs/single')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
-      require('./specs/order-by')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
       require('./specs/aggregation')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/hydration')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/max-depth')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/order-by')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
       require('./specs/pagination')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/single')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/where')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
     });
   });
 };

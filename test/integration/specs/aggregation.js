@@ -127,7 +127,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          var hydration = '[levelOnes=sum(string_column)]'
+          var hydration = '[levelOnes=sum(string_column)]';
 
           bookends.hydrate(Root, hydration).then(function(result) {
             expect(result.records[0].levelOnes).to.eql({ sum: 11 });

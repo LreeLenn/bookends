@@ -1,6 +1,6 @@
 {
   "name": "bookends",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Specific, deep data hydration for SQL databases, using Bookshelfjs",
   "main": "index.js",
   "directories": {

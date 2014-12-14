@@ -3,7 +3,7 @@ var Bookends = require('bookends');
 module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB, LevelTwo) {
   describe('max depth', function() {
     it('should default max depth to 10', function() {
-      expect(bookends.maxDepth).to.equal(10);
+      expect(bookends.maxDepth).to.equal(6);
     });
 
     it('should return an error if the hydration goes beyond the max depth', function(done) {

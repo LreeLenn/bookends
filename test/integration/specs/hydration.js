@@ -44,8 +44,8 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
     it('should allow the second param to be options', function(done) {
       var dataSpec = {
         root: [
-        { string_column: 'root0' },
-        { string_column: 'root1' }
+          { string_column: 'root0' },
+          { string_column: 'root1' }
         ]
       };
 
@@ -76,7 +76,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
         // 'leveloneren=[string_column]'
         var hydration = [
         'string_column',
-        { relation: 'levelOnes', hydration: ['string_column']}
+          { relation: 'levelOnes', hydration: ['string_column']}
         ];
 
         bookends.hydrate(Root, hydration).then(function(result) {

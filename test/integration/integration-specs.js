@@ -52,6 +52,7 @@ module.exports = function(dbConfig) {
 
     describe('specs', function() {
       require('./specs/aggregation')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
+      require('./specs/child-records')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
       require('./specs/error-handling')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
       require('./specs/hydration')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);
       require('./specs/max-depth')(setup.fixtureGenerator, bookends, setup.Root, setup.LevelOne, setup.LevelOneB, setup.LevelTwo);

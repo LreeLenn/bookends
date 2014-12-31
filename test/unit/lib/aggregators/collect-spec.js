@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var collect = require('../../../../lib/aggregations/collect');
+var collect = require('../../../../lib/aggregators/collect');
 
 describe('collect', function() {
   describe('hydration', function() {

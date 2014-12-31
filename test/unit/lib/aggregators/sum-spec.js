@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var sum = require('../../../../lib/aggregations/sum');
+var sum = require('../../../../lib/aggregators/sum');
 
 describe('sum', function() {
   describe('hydration', function() {

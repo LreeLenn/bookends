@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var count = require('../../../../lib/aggregations/count');
+var count = require('../../../../lib/aggregators/count');
 
 describe('count', function() {
   describe('hydration', function() {

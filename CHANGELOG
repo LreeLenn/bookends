@@ -1,3 +1,6 @@
+0.13.0 -- Dec 31, 2014
+-- added browser build and project.clj for publishing to clojars
+
 0.12.0 -- December 29, 2014
 -- feat: includeChildCollectionMetadata
 

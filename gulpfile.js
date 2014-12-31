@@ -2,6 +2,8 @@ var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var shell = require('gulp-shell');
 var jshint = require('gulp-jshint');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
 
 gulp.task('lint', function() {
   return gulp.src(['./lib/**/*.js', './test/**/*.js'])
@@ -32,3 +34,13 @@ gulp.task('test', [
   'test:unit',
   'test:integration:sqlite'
 ]);
+
+gulp.task('build:browser', function() {
+  return browserify('./browser.js')
+    .transform('brfs')
+    .bundle()
+    .pipe(source('bookends.js'))
+    .pipe(gulp.dest('./browser/src/'));
+});
+
+gulp.task('build', ['test', 'build:browser']);

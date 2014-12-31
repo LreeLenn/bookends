@@ -1,6 +1,6 @@
 {
   "name": "bookends",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Specific, deep data hydration for SQL databases, using Bookshelfjs",
   "main": "index.js",
   "directories": {
@@ -29,6 +29,8 @@
   },
   "devDependencies": {
     "bookshelf": "^0.7.9",
+    "brfs": "^1.2.0",
+    "browserify": "^8.0.2",
     "chai": "^1.10.0",
     "chai-as-promised": "^4.1.1",
     "gulp": "^3.8.10",
@@ -36,7 +38,8 @@
     "gulp-mocha": "^2.0.0",
     "gulp-shell": "^0.2.11",
     "sql-fixtures": "^0.7.0",
-    "sqlite3": "^3.0.4"
+    "sqlite3": "^3.0.4",
+    "vinyl-source-stream": "^1.0.0"
   },
   "files": [
     "index.js",

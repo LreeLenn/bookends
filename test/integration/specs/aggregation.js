@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var Bookends = require('bookends');
 
 module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB, LevelTwo) {

@@ -30,3 +30,5 @@ node_modules
 README.html
 .vagrant
 sqlite-integration-spec.db
+browser/target
+browser/pom.xml

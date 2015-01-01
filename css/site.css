@@ -1,0 +1,219 @@
+* {
+  border-radius: 0 !important;
+}
+
+.navbar {
+  font-weight: normal;
+}
+
+.center {
+  text-align: center;
+}
+
+.navbar.navbar-default {
+  margin-bottom: 0;
+}
+
+header .container {
+  padding-top: 60px;
+}
+
+.summary {
+  margin: 0 0 40px 0;
+}
+
+.callout {
+  margin-top: 40px;
+}
+
+.success a {
+  text-decoration: underline;
+  color: white;
+}
+
+pre {
+  background-color: white;
+}
+
+.page h2 {
+  text-transform: none;
+  margin-top: 80px;
+}
+
+.page pre {
+  margin: 40px 0;
+  max-width: 700px;
+}
+
+.page h3 {
+  text-transform: none;
+}
+
+.page h4 {
+  text-transform: none;
+  margin-top: 20px;
+}
+
+.page .alert {
+  padding-bottom: 15px;
+  max-width: 700px;
+}
+
+.page p {
+  max-width: 700px;
+  margin-bottom: 40px;
+}
+
+.records-list {
+  padding-left: 14px;
+  background-color: white;
+  font-family: monospace;
+}
+
+.records-list .object-view .object-view-title {
+  background-color: red;
+  color: white;
+}
+
+.records-list .object-view .object-view-entry span {
+  display: inline-block;
+}
+
+.records-list p {
+  font-size: 15px;
+}
+
+.primitive-number {
+  color: blue;
+}
+
+.primitive-string {
+  color: green;
+}
+
+.indent {
+  margin-left: 20px;
+}
+
+.object-view-entry-key {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.expander-container {
+  position: relative;
+}
+
+.expander-container .expander {
+  cursor: pointer;
+  top: 0;
+  left: -10px;
+  position: absolute;
+}
+
+.examples {
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.examples h3 {
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.examples .example {
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+.examples .example .example-model {
+  margin: 2px 10px 2px 30px;
+  text-align: right;
+  width: 60px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.examples .examples-tagline {
+  font-style: italic;
+  font-size: 0.5em;
+  margin-left: 10px;
+}
+
+.examples .examples-container {
+  margin: 0 24%;
+  width: 50%;
+  text-align: left;
+}
+
+.examples .expander {
+  color: #2c3e50;
+}
+
+.hydration-error {
+  width: 100%;
+  text-align: center;
+  color: #ff9696;
+}
+
+.hydration-display {
+  background-color: #DDD;
+  padding: 20px;
+}
+
+.hydration-display .hydration-display-title {
+  color: #BBB;
+  margin-bottom: 10px;
+  margin-top: -10px;
+}
+
+.hydration-input {
+  padding: 20px;
+  background-color: #2c3e50;
+  text-align: center;
+}
+
+.hydration-input span.code {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 20px;
+  color: white;
+  display: inline-block;
+}
+
+.hydration-input input {
+  font-size: 20px;
+}
+
+.hydration-input select {
+  font-size: 20px;
+}
+
+header.db-schema {
+  padding: 40px 0;
+}
+
+header.db-schema.collapsed {
+  padding: 0;
+}
+
+header.db-schema p {
+  margin-bottom: 20px;
+}
+
+header.db-schema .expander {
+  color: white;
+}
+
+.expander {
+  cursor: pointer;
+}
+
+.alert {
+  padding-bottom: 40px;
+  margin: 40px;
+}
+
+.alert h3 {
+  text-transform: none;
+}

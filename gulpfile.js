@@ -40,7 +40,7 @@ gulp.task('build:browser', function() {
     .transform('brfs')
     .bundle()
     .pipe(source('bookends.js'))
-    .pipe(gulp.dest('./browser/src/'));
+    .pipe(gulp.dest('./browser/'));
 });
 
 gulp.task('build', ['test', 'build:browser']);

@@ -30,5 +30,7 @@ node_modules
 README.html
 .vagrant
 sqlite-integration-spec.db
-browser/target
-browser/pom.xml
+site/resources/public/js/out
+site/target
+.lein-env
+.lein-repl-history

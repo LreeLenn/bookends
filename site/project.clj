@@ -1,86 +1,73 @@
-(defproject site "0.1.0-SNAPSHOT"
-  :description "the documentation site for Bookends"
-  :url "http://example.com/FIXME"
-  :license {:name "MIT License"
-            :url "http://opensource.org/licenses/MIT"}
+(defproject bookends-site "0.0.1"
+  :license {:name "MIT"
+            :url "http://opensource.org/licenses/MIT"
+            :distribution :repo}
 
-  :source-paths ["src/clj" "src/cljs"]
+  :description "The documentation site for Bookends"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [com.facebook/react "0.11.2"]
+                 [org.clojure/clojurescript "0.0-2511"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [selmer "0.7.7"]
+                 [garden "1.1.8"]
+                 [jamesmacaulay/cljs-promises "0.1.0-SNAPSHOT"]
                  [reagent "0.4.3"]
                  [reagent-utils "0.1.0"]
-                 [secretary "1.2.1"]
-                 [org.clojure/clojurescript "0.0-2511" :scope "provided"]
-                 [com.cemerick/piggieback "0.1.3"]
-                 [weasel "0.4.2"]
-                 [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.2"]
-                 [prone "0.8.0"]
-                 [compojure "1.3.1"]
-                 [selmer "0.7.7"]
-                 [environ "1.0.0"]
-                 [leiningen "2.5.0"]
-                 [figwheel "0.1.5-SNAPSHOT"]]
+                 [com.facebook/react "0.11.2"]]
 
-  :plugins [
-            [lein-cljsbuild "1.0.3"]
-            [lein-environ "1.0.0"]
-            [lein-ring "0.8.13"]
-            [lein-asset-minifier "0.2.0"]]
+  :profiles {:dev {:dependencies [[ring/ring-jetty-adapter "1.1.1"]
+                                  [compojure "1.1.0"]]}}
 
-  :ring {:handler site.handler/app}
+  :main server.core
 
-  :min-lein-version "2.5.0"
+  :plugins [[lein-cljsbuild "1.0.4"]
+            [lein-garden "0.1.9" :exclusions [org.clojure/clojure]]]
 
-  :uberjar-name "bookends-site.jar"
+  :source-paths ["src/clj"]
 
-  :minify-assets
-  {:assets
-    {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
+  :garden {:builds [{:id "prod"
+                     :stylesheet mario.style.desktop.main/stylesheet
+                     :compiler {
+                                :vendors ["webkit" "moz" "o" "ms"]
+                                :output-to "public/css/mario.css"
+                                :pretty-print? false}}
+                    {:id "desktop"
+                     :stylesheet mario.style.desktop.main/stylesheet
+                     :compiler {
+                                :vendors ["webkit" "moz" "o" "ms"]
+                                :output-to "public/css/mario.css"
+                                :prety-print? true}}]}
+  
+  :cljsbuild {
+              :builds [{
+                        :id "dev"
+                        :source-paths ["src/cljs"]
+                        :compiler {:output-to "dist/js/bookends.site.js"
+                                   :output-dir "dist/js/out"
+                                   :optimizations :none
+                                   :pretty-print true}
+                       }
+                       {
+                        :id "prod"
+                        :source-paths ["src/cljs"]
+                        :compiler {:output-to "dist/js/bookends.site.js"
+                                   :optimizations :advanced
+                                   :pretty-print false
+                                   :externs [
+                                             "react/externs/react.js"
+                                             "dist/js/knex.js"
+                                             "dist/js/bookshelf.js"
+                                             "dist/js/bookends.js"
+                                            ]}
+                       }]
+              }
+  
+  :aliases {"build-dev"  ["do"
+                              ["run" "-m" "site.build-html" "debug"]
+                              ["run" "-m" "site.copy-js"]
+                              ["cljsbuild" "auto" "dev"]]
+            "build-prod" ["do" 
+                              ["run" "-m" "site.build-html"]
+                              ["run" "-m" "site.copy-js"]
+                              ["cljsbuild" "once" "prod"]]})
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
-                             :compiler {:output-to     "resources/public/js/app.js"
-                                        :output-dir    "resources/public/js/out"
-                                        :externs       ["react/externs/react.js"]
-                                        :optimizations :none
-                                        :pretty-print  true}}}}
-
-  :profiles {:dev {:repl-options {:init-ns site.handler
-                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-
-                   :dependencies [[ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.3.2"]
-                                  [pjstadig/humane-test-output "0.6.0"]]
-
-                   :plugins [[lein-figwheel "0.2.0-SNAPSHOT"]]
-
-                   :injections [(require 'pjstadig.humane-test-output)
-                                (pjstadig.humane-test-output/activate!)]
-
-                   :figwheel {:http-server-root "public"
-                              :server-port 3449
-                              :css-dirs ["resources/public/css"]
-                              :ring-handler site.handler/app}
-
-                   :env {:dev? true}
-
-                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
-                                              :compiler {:source-map true}}}}}
-
-             :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
-                       :env {:production true}
-                       :aot :all
-                       :omit-source true
-                       ;;TODO: figure out how to clean properly
-                       ;:prep-tasks [["cljsbuild" "clean"]]
-                       :cljsbuild {:jar true
-                                   :builds {:app
-                                             {:source-paths ["env/prod/cljs"]
-                                              :compiler
-                                              {:optimizations :advanced
-                                               :pretty-print false}}}}}
-
-             :production {:ring {:open-browser? false
-                                 :stacktraces?  false
-                                 :auto-reload?  false}}})

@@ -1,2 +1,2 @@
-git subtree push --prefix build origin gh-pages
+git subtree push --prefix site/dist origin gh-pages
 

@@ -1,0 +1,19 @@
+<noscript>
+  <div class="alert alert-danger"> 
+    You need JavaScript enabled to try the demo
+  </div>
+</noscript>
+
+<div id="app"></div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/react/0.11.2/react.js"></script>
+{% script "js/knex.js" %}
+{% script "js/bookshelf.js" %}
+{% script "js/bookends.js" %}
+{% if dev %}
+  {% script "js/out/goog/base.js" %}
+  {% script "js/demo.site.js" %}
+<script type="text/javascript">goog.require("demo.core");</script>
+{% else %}
+  {% script "js/demo.site.js" %}
+{% endif %}
+

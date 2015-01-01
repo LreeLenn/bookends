@@ -1,23 +1,40 @@
-<html>
-  <head>
-    {% if dev %}
-      {% style "css/site.css" %}
-    {% else %}
-      {% style "css/site.min.css" %}
-    {% endif %}
-  </head>
-  <body>
-    <div id="app"></div>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.11.2/react.js"></script>
-    {% script "js/knex.js" %}
-    {% script "js/bookshelf.js" %}
-    {% script "js/bookends.js" %}
-    {% if dev %}
-      {% script "js/out/goog/base.js" %}
-      {% script "js/bookends.site.js" %}
-      <script type="text/javascript">goog.require("site.core");</script>
-    {% else %}
-      {% script "js/bookends.site.js" %}
-    {% endif %}
-  </body>
-</html>
+<header>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-offset-1 col-sm-10">
+        <div class="intro-text">
+          <h1 class="name">Bookends</h1>
+          <p>A NodeJS module for easily hydrating complex trees of SQL data.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<section>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-offset-1 col-sm-10">
+        <p class="summary">
+          Bookends is a small library that sits on top of the <a href="http://bookshelfjs.org">Bookshelf.js</a> ORM that makes querying for a tree of SQL data straightforward. A simple string indicates which columns, relations and aggregations you want to hydrate from the database.
+        </p>
+<pre><code class="javascript">bookends.hydrate(Author, '[first_name,last_name,books=[title]]').then(function(results) {
+  console.log(results[0].first_name);     // Louisa May
+  console.log(results[0].last_name);      // Alcott
+  console.log(results[0].books[0].title); // Little Women
+});
+</code></pre>
+
+        <div class="callout">
+          <p class="center">Try out the <a href="demo.html">live demo</a> to see it in action</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="success">
+  <p class="center">
+    MIT licensed, created by <a href="http://www.mattgreer.org">Matt Greer</a>
+  </p>
+</section>

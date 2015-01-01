@@ -34,3 +34,6 @@ site/resources/public/js/out
 site/target
 .lein-env
 .lein-repl-history
+site/dist/js/out
+site/resources/templates/js
+site/resources/templates/css

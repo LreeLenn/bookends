@@ -1,0 +1,230 @@
+## Step 1: Create Your Bookshelf.js Models
+
+Bookends lives on top of [Bookshelf.js](http://bookshelfjs.org), which is an ORM for NodeJS. You will need to set up your Bookshelf models in order for Bookshelf to successfully query against your database.
+
+For detailed instructions on this, checkout the [Bookshelf.js website](http://bookshelfjs.org). Here is a quick rundown, using the sample database found in the [demo](demo.html) as an example:
+
+```javascript
+var knex = require('knex')({
+  client: 'pg', // or mysql or sqlite3
+  connection: {
+    host: 'localhost',
+    user: 'your_user',
+    password: 'your_password',
+    database: 'your_database'
+  }
+});
+
+var bookshelf = require('bookshelf')(knex);
+
+var Author = bookshelf.Model.extend({
+  tableName: 'authors',
+  books: function() {
+    return this.hasMany(Book, 'author_id');
+  }
+});
+
+var Subject = bookshelf.Model.extend({
+  tableName: 'subjects',
+  books: function() {
+    return this.hasMany(Book, 'subject_id');
+  }
+});
+
+var Book = bookshelf.Model.extend({
+  tableName: 'books',
+  author: function() {
+    return this.belongsTo(Author, 'author_id');
+  },
+  subject: function() {
+    return this.belongsTo(Subject, 'subject_id');
+  }
+});
+```
+
+## Step 2: Create a Bookends Instance
+
+For starters, a default instance will do. We'll look at more advanced stuff later on.
+
+```javascript
+var Bookends = require('bookends');
+
+var bookends = new Bookends();
+```
+
+## Step 3: Start Hydrating Data
+
+Now with your models and bookends in hand, you can begin to query your data:
+
+```javascript
+bookends.hydrate(Author, '[first_name,last_name]').then(function(result) {
+  // result is an object
+  // result.count --> how many records came back
+  // result.records --> array of your records
+  console.log(result.records[0].first_name);
+});
+```
+### Different Ways To Hydrate Data
+
+#### Columns: '[column1,column2]'
+
+The simplest hydration is columns on the model you are querying, like in the above example where `first_name` and `last_name` where specified. This results in
+
+```sql
+select first_name, last_name from authors
+```
+
+at the database level.
+
+Notice the columns are wrapped in `[]`, this is required. Everything inside of `[` and `]` indicate what you are retrieving at that level of the hydration.
+
+#### Relations: '[someRelation=[column1,column2]]'
+
+To grab a relation that is under your current model, specify the relation name followed by `=`, then what you want hydrated in that relation.
+
+<div class="alert alert-danger">
+The relation is the name of the relation as specified in your Bookshelf models, not the name of the related table.
+</div>
+
+For example, using the books database, we could do
+
+```javascript
+bookends.hydrate(Author, '[books=[title]]')
+```
+
+This will return the titles for each author's books, and results in SQL like
+
+```sql
+select id from authors;
+...
+select title from books where author_id in (...)
+```
+
+<div class="alert alert-info">
+All of the SQL generation and querying happens within Bookshelf. All Bookends is doing is telling Bookshelf what to hydrate. If you want to see the SQL that Bookshelf is generating, add <code>debug: true</code> to your knex config object.
+</div>
+
+#### Aggregations: '[someRelation=someAggregation]'
+
+You can aggregate related data by specifying an aggregation instead of columns. For example, to see how many books each author has:
+
+```javascript
+bookends.hydrate(Author, '[books=count]')
+```
+
+Instead of an array of books for each author, you'll get back an object that looks like `{count: 2}`.
+
+<div class="alert alert-danger">
+The aggregation does not take place in the database. In other words, the SQL that is invoked is <b>not</b> <code>select count(id) from books</code>. Instead all the books are returned from the database, and the counted after the fact.
+</div>
+
+There are three built in aggregations:
+
+* `count`: `'[books=count]'` -- returns the count of the child relation
+* `sum`: `'[books=sum(price)]'` -- returns the sum of the child relation, where the specified column (in this case `price`) is summed. The column must be numeric.
+* `collect`: `'[books=collect(title)]'` -- gathers the specified column into an array.
+
+## Custom Aggregations
+
+You can create custom aggregations and have Bookends use them. To do so, pass in the custom aggregation when creating your bookends instance.
+
+For example, here is a recreation of the built in `collect`:
+
+```javascript
+var config = {
+  aggregations: {
+    myCollect: {
+      hydration: function(spec) {
+        return spec.aggregation.params;
+      },
+      aggregate: function(records, spec) {
+        return _.pluck(records, spec.aggregation.params[0])
+      }
+    }
+  }
+};
+
+var bookends = new Bookends(config);
+
+// notice the "custom." prefix, this is required
+bookends.hydrate(Author, '[books=custom.myCollect(title)]').then(...);
+```
+
+`hydration()` receives a `spec` parameter, which is simply what the user entered parsed out into an object. For example, `[books=custom.myCollect(title)]` would result in `hydrate()` receiving this object:
+
+```javascript
+{
+  aggregation: 'myCollect',
+  custom: true,
+  params: ['title']
+}
+```
+
+`hydrate()`'s job is to tell Bookends what data the aggregation needs. You can return a hydration string, or an array of columns. So in this case, the parameters to the aggregation doubly work as the hydration.
+
+`aggregate()` receives an array of the records that were hydrated, as well as that same spec object again. It's up to `aggregate()` to perform the actual aggregation. Whatever `aggregate()` returns is what will end up in the final data result.
+
+For example, in the above, the final result will look like:
+
+```javascript
+{
+  // the array of Author records
+  records: [
+    // instead of arrays of actual book records, each books property
+    // is instead the "plucking" that the aggregation did
+    { books: ['title1', 'title2', 'etc']},
+    { books: ['title3', 'title4', 'etc']},
+    { books: ['title5', 'title6', 'etc']}
+  ]
+}
+```
+
+## Where Clauses, Sorting, Limits, etc
+
+You can further fine tune the query by passing an additional options object to hydrate. See the [API docs](api-docs.html) for the gory details.
+
+### where
+Add a where clause to the root SQL query.
+
+```javascript
+var options = {
+  where: [
+    ['first_name', 'like', 'Edg%'],
+    { last_name: 'Poe'}
+  ]
+};
+bookends.hydrate(Author, options, '[first_name,last_name]')
+```
+
+### single
+causes only the first record to come back. Instead of an object with `count` and `records` property, the result is just a single record object
+
+```javascript
+var options = {
+  single: true
+};
+bookends.hydrate(Author, options, '[*]').then(function(record) {
+  console.log(record.first_name);
+});
+```
+
+`null` is returned if no record is found.
+
+### limit and offset
+
+limits and offsets the number of records returned, useful for paging
+
+```javascript
+var options = {
+  limit: 50,
+  offset: 100
+};
+
+bookends.hydrate(Author, options, '[*]').then(function(result) {
+  // the first 100 authors are skipped, then the next 50 are returned
+  console.log(result.count); // 50
+  console.log(result.offset); // 100
+});
+```
+
+`offset` is always returned, so if you don't specify it, then it will be `0`.

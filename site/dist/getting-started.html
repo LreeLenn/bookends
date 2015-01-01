@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Bookends</title><link rel="stylesheet" href="css/syntax.css" /><link rel="stylesheet" href="css/bootstrap.min.css" /><link rel="stylesheet" href="css/freelancer.css" /><link rel="stylesheet" href="css/site.css" /></head><body><nav role="navigation" class="navbar navbar-default"><div class="container"><div class="navbar-header"><a href="index.html" class="navbar-brand">Bookends</a></div><div class="collapse navbar-collapse"><ul class="nav navbar-nav"><li class=""><a href="demo.html">Live Demo</a></li><li class="active"><a href="getting-started.html">Getting Started</a></li><li class=""><a href="https://github.com/city41/bookends">GitHub</a></li></ul></div></div></nav><div><div class="container"><div class="row"><div class="col-offset-sm-1 col-sm-10 page"><h2>Step 1: Create Your Bookshelf.js Models</h2><p>Bookends lives on top of <a href="http://bookshelfjs.org">Bookshelf.js</a>, which is an ORM for NodeJS. You will need to set up your Bookshelf models in order for Bookshelf to successfully query against your database.</p><p>For detailed instructions on this, checkout the <a href="http://bookshelfjs.org">Bookshelf.js website</a>. Here is a quick rundown, using the sample database found in the <a href="demo.html">demo</a> as an example:</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">knex</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'knex'</span><span class="p">)({</span>
+  <span class="nx">client</span><span class="o">:</span> <span class="s1">'pg'</span><span class="p">,</span> <span class="c1">// or mysql or sqlite3</span>
+  <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">host</span><span class="o">:</span> <span class="s1">'localhost'</span><span class="p">,</span>
+    <span class="nx">user</span><span class="o">:</span> <span class="s1">'your_user'</span><span class="p">,</span>
+    <span class="nx">password</span><span class="o">:</span> <span class="s1">'your_password'</span><span class="p">,</span>
+    <span class="nx">database</span><span class="o">:</span> <span class="s1">'your_database'</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">bookshelf</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'bookshelf'</span><span class="p">)(</span><span class="nx">knex</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">Author</span> <span class="o">=</span> <span class="nx">bookshelf</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">tableName</span><span class="o">:</span> <span class="s1">'authors'</span><span class="p">,</span>
+  <span class="nx">books</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">Book</span><span class="p">,</span> <span class="s1">'author_id'</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">Subject</span> <span class="o">=</span> <span class="nx">bookshelf</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">tableName</span><span class="o">:</span> <span class="s1">'subjects'</span><span class="p">,</span>
+  <span class="nx">books</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">Book</span><span class="p">,</span> <span class="s1">'subject_id'</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">Book</span> <span class="o">=</span> <span class="nx">bookshelf</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">tableName</span><span class="o">:</span> <span class="s1">'books'</span><span class="p">,</span>
+  <span class="nx">author</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'author_id'</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="nx">subject</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="nx">Subject</span><span class="p">,</span> <span class="s1">'subject_id'</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre><h2>Step 2: Create a Bookends Instance</h2><p>For starters, a default instance will do. We’ll look at more advanced stuff later on.</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">Bookends</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'bookends'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">bookends</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Bookends</span><span class="p">();</span>
+</code></pre><h2>Step 3: Start Hydrating Data</h2><p>Now with your models and bookends in hand, you can begin to query your data:</p>
+<pre><code class="codehilite"><span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'[first_name,last_name]'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// result is an object</span>
+  <span class="c1">// result.count --&gt; how many records came back</span>
+  <span class="c1">// result.records --&gt; array of your records</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">records</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">first_name</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre><h3>Different Ways To Hydrate Data</h3><h4>Columns: ‘[column1,column2]’</h4><p>The simplest hydration is columns on the model you are querying, like in the above example where <code>first_name</code> and <code>last_name</code> where specified. This results in</p>
+<pre><code class="codehilite"><span class="k">select</span> <span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span> <span class="k">from</span> <span class="n">authors</span>
+</code></pre><p>at the database level.</p><p>Notice the columns are wrapped in <code>[]</code>, this is required. Everything inside of <code>[</code> and <code>]</code> indicate what you are retrieving at that level of the hydration.</p><h4>Relations: ‘[someRelation=[column1,column2]]’</h4><p>To grab a relation that is under your current model, specify the relation name followed by <code>=</code>, then what you want hydrated in that relation.</p>
+<div class="alert alert-danger">
+The relation is the name of the relation as specified in your Bookshelf models, not the name of the related table.
+</div><p>For example, using the books database, we could do</p>
+<pre><code class="codehilite"><span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'[books=[title]]'</span><span class="p">)</span>
+</code></pre><p>This will return the titles for each author’s books, and results in SQL like</p>
+<pre><code class="codehilite"><span class="k">select</span> <span class="n">id</span> <span class="k">from</span> <span class="n">authors</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="k">select</span> <span class="n">title</span> <span class="k">from</span> <span class="n">books</span> <span class="k">where</span> <span class="n">author_id</span> <span class="k">in</span> <span class="p">(...)</span>
+</code></pre>
+<div class="alert alert-info">
+All of the SQL generation and querying happens within Bookshelf. All Bookends is doing is telling Bookshelf what to hydrate. If you want to see the SQL that Bookshelf is generating, add <code>debug: true</code> to your knex config object.
+</div><h4>Aggregations: ‘[someRelation=someAggregation]’</h4><p>You can aggregate related data by specifying an aggregation instead of columns. For example, to see how many books each author has:</p>
+<pre><code class="codehilite"><span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'[books=count]'</span><span class="p">)</span>
+</code></pre><p>Instead of an array of books for each author, you’ll get back an object that looks like <code>{count: 2}</code>.</p>
+<div class="alert alert-danger">
+The aggregation does not take place in the database. In other words, the SQL that is invoked is <b>not</b> <code>select count(id) from books</code>. Instead all the books are returned from the database, and the counted after the fact.
+</div><p>There are three built in aggregations:</p>
+<ul>
+  <li><code>count</code>: <code>'[books=count]'</code> – returns the count of the child relation</li>
+  <li><code>sum</code>: <code>'[books=sum(price)]'</code> – returns the sum of the child relation, where the specified column (in this case <code>price</code>) is summed. The column must be numeric.</li>
+  <li><code>collect</code>: <code>'[books=collect(title)]'</code> – gathers the specified column into an array.</li>
+</ul><h2>Custom Aggregations</h2><p>You can create custom aggregations and have Bookends use them. To do so, pass in the custom aggregation when creating your bookends instance.</p><p>For example, here is a recreation of the built in <code>collect</code>:</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">config</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">aggregations</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">myCollect</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">hydration</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">spec</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">spec</span><span class="p">.</span><span class="nx">aggregation</span><span class="p">.</span><span class="nx">params</span><span class="p">;</span>
+      <span class="p">},</span>
+      <span class="nx">aggregate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">records</span><span class="p">,</span> <span class="nx">spec</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">_</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="nx">records</span><span class="p">,</span> <span class="nx">spec</span><span class="p">.</span><span class="nx">aggregation</span><span class="p">.</span><span class="nx">params</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">bookends</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Bookends</span><span class="p">(</span><span class="nx">config</span><span class="p">);</span>
+
+<span class="c1">// notice the "custom." prefix, this is required</span>
+<span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'[books=custom.myCollect(title)]'</span><span class="p">).</span><span class="nx">then</span><span class="p">(...);</span>
+</code></pre><p><code>hydration()</code> receives a <code>spec</code> parameter, which is simply what the user entered parsed out into an object. For example, <code>[books=custom.myCollect(title)]</code> would result in <code>hydrate()</code> receiving this object:</p>
+<pre><code class="codehilite"><span class="p">{</span>
+  <span class="nx">aggregation</span><span class="o">:</span> <span class="s1">'myCollect'</span><span class="p">,</span>
+  <span class="nx">custom</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nx">params</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title'</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre><p><code>hydrate()</code>’s job is to tell Bookends what data the aggregation needs. You can return a hydration string, or an array of columns. So in this case, the parameters to the aggregation doubly work as the hydration.</p><p><code>aggregate()</code> receives an array of the records that were hydrated, as well as that same spec object again. It’s up to <code>aggregate()</code> to perform the actual aggregation. Whatever <code>aggregate()</code> returns is what will end up in the final data result.</p><p>For example, in the above, the final result will look like:</p>
+<pre><code class="codehilite"><span class="p">{</span>
+  <span class="c1">// the array of Author records</span>
+  <span class="nx">records</span><span class="o">:</span> <span class="p">[</span>
+    <span class="c1">// instead of arrays of actual book records, each books property</span>
+    <span class="c1">// is instead the "plucking" that the aggregation did</span>
+    <span class="p">{</span> <span class="nx">books</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title1'</span><span class="p">,</span> <span class="s1">'title2'</span><span class="p">,</span> <span class="s1">'etc'</span><span class="p">]},</span>
+    <span class="p">{</span> <span class="nx">books</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title3'</span><span class="p">,</span> <span class="s1">'title4'</span><span class="p">,</span> <span class="s1">'etc'</span><span class="p">]},</span>
+    <span class="p">{</span> <span class="nx">books</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title5'</span><span class="p">,</span> <span class="s1">'title6'</span><span class="p">,</span> <span class="s1">'etc'</span><span class="p">]}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre><h2>Where Clauses, Sorting, Limits, etc</h2><p>You can further fine tune the query by passing an additional options object to hydrate. See the <a href="api-docs.html">API docs</a> for the gory details.</p><h3>where</h3><p>Add a where clause to the root SQL query.</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">where</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s1">'first_name'</span><span class="p">,</span> <span class="s1">'like'</span><span class="p">,</span> <span class="s1">'Edg%'</span><span class="p">],</span>
+    <span class="p">{</span> <span class="nx">last_name</span><span class="o">:</span> <span class="s1">'Poe'</span><span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">};</span>
+<span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="s1">'[first_name,last_name]'</span><span class="p">)</span>
+</code></pre><h3>single</h3><p>causes only the first record to come back. Instead of an object with <code>count</code> and <code>records</code> property, the result is just a single record object</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">single</span><span class="o">:</span> <span class="kc">true</span>
+<span class="p">};</span>
+<span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="s1">'[*]'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">record</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">first_name</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre><p><code>null</code> is returned if no record is found.</p><h3>limit and offset</h3><p>limits and offsets the number of records returned, useful for paging</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">limit</span><span class="o">:</span> <span class="mi">50</span><span class="p">,</span>
+  <span class="nx">offset</span><span class="o">:</span> <span class="mi">100</span>
+<span class="p">};</span>
+
+<span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="s1">'[*]'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// the first 100 authors are skipped, then the next 50 are returned</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">count</span><span class="p">);</span> <span class="c1">// 50</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">offset</span><span class="p">);</span> <span class="c1">// 100</span>
+<span class="p">});</span>
+</code></pre><p><code>offset</code> is always returned, so if you don’t specify it, then it will be <code>0</code>.</p></div></div></div></div></body></html>

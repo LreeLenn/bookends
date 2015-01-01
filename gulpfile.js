@@ -4,6 +4,8 @@ var shell = require('gulp-shell');
 var jshint = require('gulp-jshint');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
 
 gulp.task('lint', function() {
   return gulp.src(['./lib/**/*.js', './test/**/*.js'])
@@ -35,12 +37,22 @@ gulp.task('test', [
   'test:integration:sqlite'
 ]);
 
-gulp.task('build:browser', function() {
+gulp.task('build:browser:bookends', function() {
   return browserify('./browser.js')
     .transform('brfs')
     .bundle()
     .pipe(source('bookends.js'))
+    .pipe(buffer())
+    .pipe(uglify())
     .pipe(gulp.dest('./browser/'));
 });
+
+gulp.task('build:browser:bookshelf', function() {
+  return gulp.src('./node_modules/bookshelf/browser/*.js')
+    .pipe(uglify())
+    .pipe(gulp.dest('./browser/'));
+});
+
+gulp.task('build:browser', ['build:browser:bookends', 'build:browser:bookshelf']);
 
 gulp.task('build', ['test', 'build:browser']);

@@ -35,6 +35,15 @@ pre {
   background-color: white;
 }
 
+section.footer {
+  padding: 10px 0;
+}
+
+section.footer p {
+  margin: 0;
+  font-size: 0.7em;
+}
+
 .page h2 {
   text-transform: none;
   margin-top: 80px;
@@ -57,11 +66,16 @@ pre {
 .page .alert {
   padding-bottom: 15px;
   max-width: 700px;
+  margin-left: 0;
 }
 
 .page p {
   max-width: 700px;
   margin-bottom: 40px;
+}
+
+.page li {
+  max-width: 700px;
 }
 
 .records-list {

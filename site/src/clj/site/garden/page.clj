@@ -2,6 +2,8 @@
   (:require [garden.units :refer [px percent s em]]
             [garden.color :refer [rgb]]))
 
+(def max-width 700)
+
 (defn export []
   [
    [:.page
@@ -9,7 +11,7 @@
      {:margin-top (px 80)
       :text-transform "none"}]
     [:pre
-     {:max-width (px 700)
+     {:max-width (px max-width)
       :margin [[(px 40) 0]]}]
     [:h3
      {:text-transform "none"}]
@@ -17,8 +19,11 @@
      {:margin-top (px 20)
       :text-transform "none"}]
     [:.alert
-     {:max-width (px 700)
+     {:margin-left 0
+      :max-width (px max-width)
       :padding-bottom (px 15)}]
     [:p
      {:margin-bottom (px 40)
-      :max-width (px 700)}]]])
+      :max-width (px max-width)}]
+    [:li
+     {:max-width (px max-width)}]]])

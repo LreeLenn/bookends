@@ -27,6 +27,12 @@
 
   [:pre
    {:background-color "white"}]
+
+  [:section.footer
+   {:padding [[(px 10) 0]]}
+   [:p
+    {:font-size (em 0.7)
+     :margin 0}]]
   
   (page/export)
   (sandbox/export))

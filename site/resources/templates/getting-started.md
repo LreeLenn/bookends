@@ -1,4 +1,10 @@
-## Step 1: Create Your Bookshelf.js Models
+## Step 1: Install Everything
+
+```javascript
+npm install --save bookshelf knex bookends
+```
+
+## Step 2: Create Your Bookshelf.js Models
 
 Bookends lives on top of [Bookshelf.js](http://bookshelfjs.org), which is an ORM for NodeJS. You will need to set up your Bookshelf models in order for Bookshelf to successfully query against your database.
 
@@ -42,17 +48,20 @@ var Book = bookshelf.Model.extend({
 });
 ```
 
-## Step 2: Create a Bookends Instance
+## Step 3: Create a Bookends Instance
 
-For starters, a default instance will do. We'll look at more advanced stuff later on.
+For starters, a default instance will do. More advanced stuff is looked at later on.
 
 ```javascript
 var Bookends = require('bookends');
-
 var bookends = new Bookends();
 ```
 
-## Step 3: Start Hydrating Data
+<div class="alert alert-info">
+Bookends instances are very lightweight and maintain almost no state. Creating different instances for different use cases is a good approach, especially when you start using many different custom aggregations (see below).
+</div>
+
+## Step 4: Start Hydrating Data
 
 Now with your models and bookends in hand, you can begin to query your data:
 
@@ -66,9 +75,9 @@ bookends.hydrate(Author, '[first_name,last_name]').then(function(result) {
 ```
 ### Different Ways To Hydrate Data
 
-#### Columns: '[column1,column2]'
+#### Columns: `[column1,column2]`
 
-The simplest hydration is columns on the model you are querying, like in the above example where `first_name` and `last_name` where specified. This results in
+The simplest hydration involves columns on the model you are querying, like in the above example where `first_name` and `last_name` were specified. This results in
 
 ```sql
 select first_name, last_name from authors
@@ -78,7 +87,11 @@ at the database level.
 
 Notice the columns are wrapped in `[]`, this is required. Everything inside of `[` and `]` indicate what you are retrieving at that level of the hydration.
 
-#### Relations: '[someRelation=[column1,column2]]'
+<div class="alert alert-info">
+Passing <code>[*]</code> as your hydration works as expected. It will retrieve all columns.
+</div>
+
+#### Relations: `[someRelation=[column1,column2]]`
 
 To grab a relation that is under your current model, specify the relation name followed by `=`, then what you want hydrated in that relation.
 
@@ -92,7 +105,7 @@ For example, using the books database, we could do
 bookends.hydrate(Author, '[books=[title]]')
 ```
 
-This will return the titles for each author's books, and results in SQL like
+This will return the titles for each book under each author, and results in SQL like
 
 ```sql
 select id from authors;
@@ -101,10 +114,10 @@ select title from books where author_id in (...)
 ```
 
 <div class="alert alert-info">
-All of the SQL generation and querying happens within Bookshelf. All Bookends is doing is telling Bookshelf what to hydrate. If you want to see the SQL that Bookshelf is generating, add <code>debug: true</code> to your knex config object.
+All of the SQL queries come from Bookshelf. Bookends is just telling Bookshelf what to hydrate. If you want to see the SQL that Bookshelf is generating, add <code>debug: true</code> to your knex config object.
 </div>
 
-#### Aggregations: '[someRelation=someAggregation]'
+#### Aggregations: `[someRelation=someAggregation(someParameter)]`
 
 You can aggregate related data by specifying an aggregation instead of columns. For example, to see how many books each author has:
 
@@ -112,7 +125,7 @@ You can aggregate related data by specifying an aggregation instead of columns. 
 bookends.hydrate(Author, '[books=count]')
 ```
 
-Instead of an array of books for each author, you'll get back an object that looks like `{count: 2}`.
+Instead of an array of books for each author, you will get back an object that looks like `{count: 2}`.
 
 <div class="alert alert-danger">
 The aggregation does not take place in the database. In other words, the SQL that is invoked is <b>not</b> <code>select count(id) from books</code>. Instead all the books are returned from the database, and the counted after the fact.
@@ -120,9 +133,9 @@ The aggregation does not take place in the database. In other words, the SQL tha
 
 There are three built in aggregations:
 
-* `count`: `'[books=count]'` -- returns the count of the child relation
-* `sum`: `'[books=sum(price)]'` -- returns the sum of the child relation, where the specified column (in this case `price`) is summed. The column must be numeric.
-* `collect`: `'[books=collect(title)]'` -- gathers the specified column into an array.
+* **count**: `[books=count]` - returns the count of the child relation
+* **sum**: `[books=sum(price)]` - returns the sum of the child relation, where the specified column (in this case `price`) is summed. The column must be numeric.
+* **collect**: `[books=collect(title)]` - gathers the specified column into an array.
 
 ## Custom Aggregations
 
@@ -160,9 +173,9 @@ bookends.hydrate(Author, '[books=custom.myCollect(title)]').then(...);
 }
 ```
 
-`hydrate()`'s job is to tell Bookends what data the aggregation needs. You can return a hydration string, or an array of columns. So in this case, the parameters to the aggregation doubly work as the hydration.
+`hydrate()` tells Bookends what data the aggregation needs. You can return a hydration string, or an array of columns. So in this case, the parameters to the aggregation doubly work as the hydration.
 
-`aggregate()` receives an array of the records that were hydrated, as well as that same spec object again. It's up to `aggregate()` to perform the actual aggregation. Whatever `aggregate()` returns is what will end up in the final data result.
+`aggregate()` receives an array of the records that were hydrated, as well as that same spec object again. It is up to `aggregate()` to perform the actual aggregation. Whatever `aggregate()` returns is what will end up in the final data result.
 
 For example, in the above, the final result will look like:
 
@@ -227,4 +240,4 @@ bookends.hydrate(Author, options, '[*]').then(function(result) {
 });
 ```
 
-`offset` is always returned, so if you don't specify it, then it will be `0`.
+`offset` is always returned, so if you do not specify it, then it will be `0`.

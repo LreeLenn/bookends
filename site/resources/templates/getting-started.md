@@ -1,14 +1,14 @@
 ## Step 1: Install Everything
 
 ```javascript
-npm install --save bookshelf knex bookends
+npm install --save knex bookshelf bookends
 ```
 
 ## Step 2: Create Your Bookshelf.js Models
 
-Bookends lives on top of [Bookshelf.js](http://bookshelfjs.org), which is an ORM for NodeJS. You will need to set up your Bookshelf models in order for Bookshelf to successfully query against your database.
+Bookends lives on top of [Bookshelf.js](http://bookshelfjs.org), which is an ORM for Node.js. You will need to set up your Bookshelf models before using Bookends.
 
-For detailed instructions on this, checkout the [Bookshelf.js website](http://bookshelfjs.org). Here is a quick rundown, using the sample database found in the [demo](demo.html) as an example:
+For detailed instructions on this, checkout the [Bookshelf.js website](http://bookshelfjs.org). Here is a quick rundown, using the database found in the [demo](demo.html) as an example:
 
 ```javascript
 var knex = require('knex')({
@@ -50,7 +50,7 @@ var Book = bookshelf.Model.extend({
 
 ## Step 3: Create a Bookends Instance
 
-For starters, a default instance will do. More advanced stuff is looked at later on.
+For starters, a default instance will do.
 
 ```javascript
 var Bookends = require('bookends');
@@ -83,8 +83,6 @@ The simplest hydration involves columns on the model you are querying, like in t
 select first_name, last_name from authors
 ```
 
-at the database level.
-
 Notice the columns are wrapped in `[]`, this is required. Everything inside of `[` and `]` indicate what you are retrieving at that level of the hydration.
 
 <div class="alert alert-info">
@@ -96,26 +94,16 @@ Passing <code>[*]</code> as your hydration works as expected. It will retrieve a
 To grab a relation that is under your current model, specify the relation name followed by `=`, then what you want hydrated in that relation.
 
 <div class="alert alert-danger">
-The relation is the name of the relation as specified in your Bookshelf models, not the name of the related table.
+You need to specify the relation name that you set on your Bookshelf model, <b>not</b> the table name.
 </div>
 
-For example, using the books database, we could do
+For example, using the demo database, we could do
 
 ```javascript
 bookends.hydrate(Author, '[books=[title]]')
 ```
 
-This will return the titles for each book under each author, and results in SQL like
-
-```sql
-select id from authors;
-...
-select title from books where author_id in (...)
-```
-
-<div class="alert alert-info">
-All of the SQL queries come from Bookshelf. Bookends is just telling Bookshelf what to hydrate. If you want to see the SQL that Bookshelf is generating, add <code>debug: true</code> to your knex config object.
-</div>
+Returning all the titles for all the books, grouped under their author.
 
 #### Aggregations: `[someRelation=someAggregation(someParameter)]`
 
@@ -128,10 +116,10 @@ bookends.hydrate(Author, '[books=count]')
 Instead of an array of books for each author, you will get back an object that looks like `{count: 2}`.
 
 <div class="alert alert-danger">
-The aggregation does not take place in the database. In other words, the SQL that is invoked is <b>not</b> <code>select count(id) from books</code>. Instead all the books are returned from the database, and the counted after the fact.
+Aggregations do not take place in the database, a minor ding against Bookends. Instead the related records are returned to memory, and Bookends aggregates them after the fact.
 </div>
 
-There are three built in aggregations:
+so far there are three built in aggregations:
 
 * **count**: `[books=count]` - returns the count of the child relation
 * **sum**: `[books=sum(price)]` - returns the sum of the child relation, where the specified column (in this case `price`) is summed. The column must be numeric.
@@ -139,7 +127,7 @@ There are three built in aggregations:
 
 ## Custom Aggregations
 
-You can create custom aggregations and have Bookends use them. To do so, pass in the custom aggregation when creating your bookends instance.
+You can create custom aggregations too. To do so, pass in the custom aggregation when creating your bookends instance.
 
 For example, here is a recreation of the built in `collect`:
 
@@ -168,7 +156,6 @@ bookends.hydrate(Author, '[books=custom.myCollect(title)]').then(...);
 ```javascript
 {
   aggregation: 'myCollect',
-  custom: true,
   params: ['title']
 }
 ```
@@ -241,3 +228,21 @@ bookends.hydrate(Author, options, '[*]').then(function(result) {
 ```
 
 `offset` is always returned, so if you do not specify it, then it will be `0`.
+
+### totalCount
+
+Have Bookends perform one more query to get the total count of rows. An additional `totalCount` property is added to the result.
+
+```javascript
+var options = {
+  totalCount: true
+};
+
+
+bookends.hydrate(Author, options, '[*]').then(function(result) {
+  console.log(result.totalCount); // count of all the rows in the authors table
+});
+```
+
+**NOTE:** if `totalCount` is used in conjunction with a where clause, that where clause is also used to calculate totalCount.
+

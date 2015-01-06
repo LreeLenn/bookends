@@ -19,10 +19,10 @@
         <p class="summary">
           Bookends is a small library that sits on top of the <a href="http://bookshelfjs.org">Bookshelf.js</a> ORM that makes querying for a tree of SQL data straightforward. A simple string indicates which columns, relations and aggregations you want to hydrate from the database.
         </p>
-<pre><code class="javascript">bookends.hydrate(Author, '[first_name,last_name,books=[title]]').then(function(results) {
-  console.log(results[0].first_name);     // Louisa May
-  console.log(results[0].last_name);      // Alcott
-  console.log(results[0].books[0].title); // Little Women
+<pre><code class="javascript">bookends.hydrate(Author, '[first_name,last_name,books=[title]]').then(function(result) {
+  console.log(result.records[0].first_name);     // Louisa May
+  console.log(result.records[0].last_name);      // Alcott
+  console.log(result.records[0].books[0].title); // Little Women
 });
 </code></pre>
 

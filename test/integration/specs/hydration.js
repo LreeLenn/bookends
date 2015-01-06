@@ -21,7 +21,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
       });
     });
 
-    it('should have a reasonable default if no hydration provided', function(done) {
+    it('should hydrate * if no hydration is provided', function(done) {
       var dataSpec = {
         root: {
           string_column: 'value1',
@@ -73,16 +73,10 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
       };
 
       fixtureGenerator.create(dataSpec).then(function(result) {
-        // 'leveloneren=[string_column]'
-        var hydration = [
-        'string_column',
-          { relation: 'levelOnes', hydration: ['string_column']}
-        ];
-
-        bookends.hydrate(Root, hydration).then(function(result) {
+        bookends.hydrate(Root, '[levelOnes=[string_column]]').then(function(result) {
           var record = result.records.pop();
-          expect(record.id).to.be.a('number');
-          expect(record.string_column).to.equal('root0');
+          expect(record).to.not.have.property('id');
+          expect(record).to.not.have.property('string_column');
           expect(record.levelOnes[0].string_column).to.equal('levelone0');
           expect(record.levelOnes[0]).to.not.have.property('id');
           expect(record.levelOnes[0]).to.not.have.property('root_id');
@@ -103,12 +97,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
       };
 
       fixtureGenerator.create(dataSpec).then(function(result) {
-        // 'leveloneren=[string_column]'
-        var hydration = [
-        { relation: 'levelOnes', hydration: ['id', 'string_column', 'root_id']}
-        ];
-
-        bookends.hydrate(Root, hydration).then(function(result) {
+       bookends.hydrate(Root, '[id,levelOnes=[id,string_column,root_id]]').then(function(result) {
           var record = result.records.pop();
           expect(record.id).to.be.a('number');
           expect(record.levelOnes[0].string_column).to.equal('value2');
@@ -229,15 +218,12 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
       };
 
       fixtureGenerator.create(dataSpec).then(function(result) {
-        // 'leveloneren=[string_column]'
-        var hydration = [
-        { relation: 'levelOne', hydration: ['string_column']}
-        ];
-
-        bookends.hydrate(LevelOneB, hydration).then(function(result) {
+        bookends.hydrate(LevelOneB, '[levelOne=[string_column]]').then(function(result) {
           var record = result.records.pop();
-          expect(record.id).to.be.a('number');
           expect(record.levelOne.string_column).to.equal('levelone0');
+          expect(record.levelOne).to.not.have.property('id');
+          expect(record.levelOne).to.not.have.property('leveloneb_id');
+          expect(record).to.not.have.property('id');
           done();
         });
       });

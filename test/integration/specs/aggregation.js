@@ -95,12 +95,7 @@ module.exports = function(fixtureGenerator, bookends, Root, LevelOne, LevelOneB,
         };
 
         fixtureGenerator.create(dataSpec).then(function(result) {
-          // 'leveloneren=collect(string_column)'
-          var hydration = [
-          { relation: 'levelOnes', aggregation: { method: 'collect', params: ['string_column'] }}
-          ];
-
-          bookends.hydrate(Root, hydration).then(function(result) {
+          bookends.hydrate(Root, '[levelOnes=collect(string_column)]').then(function(result) {
             var record = result.records.pop();
             expect(record.levelOnes).to.eql(['levelone0', 'levelone1']);
             done();

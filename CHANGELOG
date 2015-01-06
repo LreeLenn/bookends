@@ -1,3 +1,7 @@
+0.14.0 -- Jan 6, 2015
+-- cleaning up any column that was needed to build the result but wasn't
+requested
+
 0.13.0 -- Dec 31, 2014
 -- added browser build and project.clj for publishing to clojars
 

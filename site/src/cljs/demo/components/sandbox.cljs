@@ -44,9 +44,10 @@
        (when-not @collapsed [:h3 "Examples"])
        (when-not @collapsed [:div.examples-container
         [example models/Author "Author" "[first_name,last_name]"]
-        [example models/Book "Book" "[title]"]
+        [example models/Book "Book" "[id,title]"]
         [example models/Author "Author" "[first_name,last_name,books=[title]]"]
         [example models/Subject "Subject" "[subject,books=count]"]
+        [example models/Subject "Subject" "[subject,books=collect(title)]"]
         [example models/Author "Author" "[first_name,last_name,books=[title,subject=[subject]]]"]])
        [expander/cmp collapsed "examples"]])))
 

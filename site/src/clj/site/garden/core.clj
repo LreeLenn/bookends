@@ -1,6 +1,6 @@
 (ns site.garden.core
   (:require [garden.def :refer [defstylesheet defstyles]]
-            [garden.units :refer [px em]]
+            [garden.units :refer [px em percent]]
             [site.garden.sandbox :as sandbox]
             [site.garden.page :as page]))
 
@@ -8,7 +8,8 @@
   [:*
    {:border-radius "0 !important"}]
   [:.navbar
-   {:font-weight "normal"}]
+   {:margin-bottom 0
+    :font-weight "normal"}]
   [:.center
    {:text-align "center"}]
   [:.navbar.navbar-default
@@ -33,6 +34,9 @@
    [:p
     {:font-size (em 0.7)
      :margin 0}]]
+
+  [:img
+   {:max-width (percent 100)}]
   
   (page/export)
   (sandbox/export))

@@ -54,8 +54,6 @@
      (html5
        [:head
         [:meta {:charset "utf-8"}]
-        [:meta {:name "viewport"
-                :content "width=device-width, initial-scale=1.0"}]
         [:title "Bookends"]
         [:link {:rel "stylesheet" :href "css/syntax.css"}]
         [:link {:rel "stylesheet" :href "css/bootstrap.min.css"}]
@@ -67,12 +65,11 @@
          [:div.container
           [:div.navbar-header
            [:a.navbar-brand {:href "index.html"} "Bookends"]]
-          [:div.collapse.navbar-collapse
-           [:ul.nav.navbar-nav
+          [:ul.nav.navbar-nav
             (menu-entry "demo.html" "Live Demo" current-href)
             (menu-entry "getting-started.html" "Getting Started" current-href)
             #_(menu-entry "api-docs.html" "API Docs" current-href)
-            (menu-entry "https://github.com/city41/bookends" "GitHub" current-href)]]]]
+            (menu-entry "https://github.com/city41/bookends" "GitHub" current-href)]]]
         [:div
          (if add-container
            [:div.container

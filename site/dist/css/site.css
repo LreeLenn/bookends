@@ -3,6 +3,7 @@
 }
 
 .navbar {
+  margin-bottom: 0;
   font-weight: normal;
 }
 
@@ -42,6 +43,10 @@ section.footer {
 section.footer p {
   margin: 0;
   font-size: 0.7em;
+}
+
+img {
+  max-width: 100%;
 }
 
 .page h2 {

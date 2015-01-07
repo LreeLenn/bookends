@@ -8,6 +8,13 @@
 
 (defn export []
   [
+   [:.sql-view
+    {:padding (px 10)
+     :border [[(px 1) "solid" "grey"]]}
+    [:.sql-view-header
+     {:font-weight "bold"
+      :display "inline-block"
+      :width (px 100)}]]
    [:.examples
     {:text-align "center"
      :margin-bottom (px 20)

@@ -130,6 +130,17 @@ img {
   position: absolute;
 }
 
+.sql-view {
+  border: 1px solid grey;
+  padding: 10px;
+}
+
+.sql-view .sql-view-header {
+  width: 100px;
+  display: inline-block;
+  font-weight: bold;
+}
+
 .examples {
   padding: 20px;
   margin-bottom: 20px;

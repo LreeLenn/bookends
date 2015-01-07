@@ -1,9 +1,8 @@
 (ns demo.populate-db
   (:require [demo.data :as data]
+            [demo.knex :refer [knex]]
             [cljs-promises.core :as p]
             [cljs-promises.async :as pasync]))
-
-(def knex (js/Knex. #js {:client "websql"}))
 
 (defn- populate-table [name data]
   (. (knex name) (insert data)))

@@ -6,7 +6,7 @@
   :description "The documentation site for Bookends"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2511"]
+                 [org.clojure/clojurescript "0.0-2665"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [selmer "0.7.7"]
                  [garden "1.2.5"]

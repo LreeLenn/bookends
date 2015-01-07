@@ -1,6 +1,6 @@
-(ns demo.components.models)
+(ns demo.components.models
+  (:require [demo.knex :refer [knex]]))
 
-(def knex (js/Knex. #js {:client "websql"}))
 (def db (js/Bookshelf. knex))
 (def Model (.-Model db))
 

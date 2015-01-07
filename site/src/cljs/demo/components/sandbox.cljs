@@ -5,18 +5,22 @@
             [demo.hydrate :refer [hydrate]]
             [demo.components.records :as records]
             [demo.components.expander :as expander]
-            [cljs.core.async :refer [<!]]))
+            [demo.knex :as knex]
+            [cljs.core.async :refer [<!]]
+            [clojure.string :refer [join]]))
 
 (def model (atom models/Author))
 (def hydration (atom nil))
 
 (def hydration-result (atom nil))
 (def hydration-error (atom nil))
+(def sql-statements (atom []))
 
 
 (defn do-hydration []
   (go
     (when (and @model @hydration)
+      (reset! sql-statements [])
       (let [hr (<! (hydrate @model @hydration))
             result (hr 0)
             error (hr 1)]
@@ -66,10 +70,39 @@
           {:value key}) 
         key])]))
 
+(defn tabs [current-atom]
+  (let [sqls @sql-statements
+        sqls-c (count sqls)]
+    [:ul.nav.nav-tabs
+     [:li
+      [:a {:on-click #(reset! current-atom "records")}
+       (str "hydrated " (.-count @hydration-result) " " (.. @model -prototype -tableName))]]
+     [:li
+      [:a {:on-click #(reset! current-atom "sql")}
+       (str sqls-c " SQL statement" (when-not (= sqls-c 1) "s"))]]]))
+
+(defn sql-view [sql]
+  [:div.sql-view
+   [:div.sql-view-sql
+    [:span.sql-view-header "query: "]
+    [:code (:sql sql)]]
+   [:div.sql-view-bindings
+    [:span.sql-view-header "bindings: "] 
+    [:code "[" (join ", " (:bindings sql)) "]"]]])
+
 (defn hydration-display []
-  [:div.hydration-display
-   [:div.hydration-display-title (str "hydrated " (.-count @hydration-result) " " (.. @model -prototype -tableName))]
-   [records/cmp (js->clj @hydration-result :keywordize-keys true)]])
+  (let [current-tab (atom "records")]
+    (fn []
+      [:div.hydration-display
+       [tabs current-tab]
+       (if (= "records" @current-tab) 
+         [:div.hydration-display-records
+          [:div.hydration-display-title ]
+          [records/cmp (js->clj @hydration-result :keywordize-keys true)]]
+         [:div.hydration-display-sql
+          (for [sql @sql-statements]
+            [sql-view sql])])])))
+
 
 (defn hydration-input []
   [:div.hydration-input
@@ -94,4 +127,10 @@
    (when @hydration-result
      [hydration-display])])
 
+(defn listen! []
+  (let [out (knex/init-chan)] 
+    (go (while true
+          (let [sql (<! out)] 
+            (swap! sql-statements conj sql))))))
 
+(listen!)

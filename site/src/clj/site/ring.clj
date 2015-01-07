@@ -47,8 +47,8 @@
   [:li {:class (if (= href current-href) "active" "")}
      [:a {:href href} title]])
 
-(defn layout-page ([page current-href]
-                   (layout-page page current-href false))
+(defn layout-partial ([page current-href]
+                   (layout-partial page current-href false))
   ([page current-href add-container]
    (highlight-code-blocks
      (html5
@@ -68,7 +68,7 @@
           [:ul.nav.navbar-nav
             (menu-entry "demo.html" "Live Demo" current-href)
             (menu-entry "getting-started.html" "Getting Started" current-href)
-            #_(menu-entry "api-docs.html" "API Docs" current-href)
+            (menu-entry "docs.html" "Docs" current-href)
             (menu-entry "https://github.com/city41/bookends" "GitHub" current-href)]]]
         [:div
          (if add-container
@@ -78,38 +78,42 @@
               page]]]
            page)]]))))
 
-(defn get-page 
+(defn get-partial 
   ([page] 
-   (get-page page true))
+   (get-partial page true))
   ([page is-dev]
    (fn [request]
-     (layout-page
+     (layout-partial
        (render-file (str "templates/" page ".html") {:dev is-dev})
        (str page ".html")))))
 
 (defn get-markdown-page [page is-dev]
   (fn [request]
-    (layout-page
+    (layout-partial
       (md/to-html (slurp (str "resources/templates/" page ".md")) [:all])
       (str page ".html")
       true)))
   
+(defn get-page [page is-dev]
+  (fn [request]
+    (render-file (str "templates/" page ".html") {:dev is-dev})))
 
-(defn get-pages 
+(defn get-partials 
   ([] 
-   (get-pages true))
+   (get-partials true))
   ([is-dev]
    (merge (stasis/slurp-directory "resources/templates" #".*\.(js|css|svg)$")
-          {"/index.html" (get-page "index" is-dev)
-           "/demo.html"  (get-page "demo" is-dev)
-           "/getting-started.html" (get-markdown-page "getting-started" is-dev) })))
+          {"/index.html" (get-partial "index" is-dev)
+           "/demo.html"  (get-partial "demo" is-dev)
+           "/getting-started.html" (get-markdown-page "getting-started" is-dev) 
+           "/docs.html" (get-page "docs" is-dev)})))
 
 (def app
- (-> (stasis/serve-pages get-pages)
+ (-> (stasis/serve-pages get-partials)
      (wrap-content-type)))
 
 (def dist-dir "dist")
 
 (defn build-dist []
   (stasis/empty-directory! dist-dir)
-  (stasis/export-pages (get-pages false) dist-dir))
+  (stasis/export-pages (get-partials false) dist-dir))

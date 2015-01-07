@@ -72,10 +72,10 @@ The config is optional, reasonable defaults are set if it is omitted. The config
             </p>
             <h3 id="maxDepth">maxDepth (default: 6)</h3>
             <p>Imposes a limit on how deep the hydration tree can be. Each relation specified in a hydration adds one more to the depth.
-            For example, 
-            
+            For example,
+
             <p>
-            <code>[column1,relation1=[column2,relation2=[column3]]]</code> 
+            <code>[column1,relation1=[column2,relation2=[column3]]]</code>
             </p>
             <p>
               has a depth of 3. This is a primitive means of preventing Bookends from performing too many SQL queries.
@@ -120,7 +120,7 @@ The config is optional, reasonable defaults are set if it is omitted. The config
 </pre>
 
             <p>The default of false is usually what you want. But including metadata can be useful if you are merging a previous aggregation with a hydration. It also sets up for allowing paging of child records, which is not yet implemented.</p>
-            
+
 
           <h2 id="methods">methods</h2>
           <h3 id="hydrate" class="header">hydrate</h3><code>bookends.hydrate(Model, [options], [hydration])</code> <br>
@@ -134,7 +134,7 @@ The config is optional, reasonable defaults are set if it is omitted. The config
                  <li><tt>[hydration] (string|array)</tt> - An optional hydration string or array specifying what data, relations and aggregations should be retrieved. If omitted, it defauls to <tt>[*]</tt> which results in retrieving all columns for the specified model.</li>
                </ul>
             </li>
-          </ul>         
+          </ul>
 
           <p><b>returns: </b> A promise is returned which will resolve to the result of the hydration.</p>
 
@@ -143,6 +143,7 @@ The config is optional, reasonable defaults are set if it is omitted. The config
                <ul>
                   <li>options
                      <ul>
+                       <li><tt>orderBy (array)</tt> - sets an order by clause, for example <tt>['last_name', 'DESC']</tt></li>
                        <li><tt>limit (number)</tt> - imposes a limit on how many records will be returned.</li>
                        <li><tt>offset (number)</tt> - offsets the query by the given number. Useful for paging.</li>
                        <li><tt>totalCount (boolean)</tt> - if set to true, an additional query will be performed to determine the total count of records for the model. If where clauses are included, these where clauses are used both for returning records and determining total count. The result object will have an additional <tt>totalCount</tt> property.</li>
@@ -189,7 +190,7 @@ bookends.hydrate(Vehicle, options, '[*]').then(function(result) {
       <p>
         Only the columns you specified are returned in the result. This includes primary and foreign key columns. If you need for example the id column, you must specify it.
       </p>
-      
+
       <h3 id="hydration-strings-relations">relations</h3>
       <p>
         To return a related model with your hydration, specify it within the hydration. Relations are denoted by <tt>=</tt> which then indicates how tghe relation should be hydrated
@@ -225,7 +226,7 @@ bookends.hydrate(Vehicle, options, '[*]').then(function(result) {
 
       <h2 id="built-in-aggregations">built in aggregations</h2>
       <p>Bookends ships with three built in aggregations</p>
-      
+
       <h3 id="agg-count">count</h3>
 
       <p>Counts the child relation and returns the quantity as <tt>{count: [number]}</tt>.</p>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+      <meta http-equiv="X-UA-Compatible" content="chrome=1">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="viewport" content="target-densitydpi=device-dpi">
+      <meta name="HandheldFriendly" content="true">
+      <link rel="stylesheet" href="css/docs.css">
+      <title>
+         docs - Bookends
+      </title>
+   </head>
+   <body>
+      <div id="sidebar" class="interface">
+         <a class="toc_title" href="#">Bookends</a>
+         <ul class="toc_section">
+            <li>» <a href="http://github.com/city41/bookends">GitHub Repository</a></li>
+            <li>» <a href="index.html">Main Documentation Site</a></li>
+         </ul>
+         <a class="toc_title" href="#installation">installation</a>
+         <a class="toc_title" href="#config">config</a>
+         <ul class="toc_section">
+            <li>- <a href="#maxDepth">maxDepth</a></li>
+            <li>- <a href="#includeChildCollectionMetadata">includeChildCollectionMetadata</a></li>
+         </ul>
+         <a class="toc_title" href="#methods">methods</a>
+         <ul class="toc_section">
+            <li>- <a href="#hydrate">hydrate</a></li>
+         </ul>
+         <a class="toc_title" href="#hydration-strings">hydration strings</a>
+         <ul class="toc_section">
+            <li>- <a href="#hydration-strings-columns">columns</a></li>
+            <li>- <a href="#hydration-strings-relations">relations</a></li>
+            <li>- <a href="#hydration-strings-aggregations">aggregations</a></li>
+         </ul>
+         <a class="toc_title" href="#built-in-aggregations">built in aggregations</a>
+         <ul class="toc_section">
+            <li>- <a href="#agg-count">count</a></li>
+            <li>- <a href="#agg-sum">sum</a></li>
+            <li>- <a href="#agg-collect">collect</a></li>
+         </ul>
+         <a class="toc_title" href="#custom-aggregations">custom aggregations</a>
+      </div>
+      <div class="container">
+         <p id="introduction">
+            <h1 class="logo">Bookends</h1>
+         </p>
+         <p>
+         <a href="http://github.com/city41/bookends">Bookends</a> is a small library that sits on top of <a href="http://bookshelfjs.org">Bookshelf.js</a>, and makes querying a complex tree of SQL data easier.
+         </p>
+         <div id="documentation">
+            <h2 id="installation">installation</h2>
+<pre>npm install --save knex bookshelf bookends</pre>
+
+            <p>
+            Bookends requires the use of Bookshelf models. To get started with Bookshelf, check out the <a href="http://bookshelfjs.org">Bookshelf.js</a> site, or <a href="getting-started.html">the getting started guide</a>.
+            </p>
+            <h2 id="config">config</h2>
+            <p>
+              When instantiating your bookends instance, you can pass it an optional config object.
+
+<pre>var config = {
+  maxDepth: 8,
+  includeChildCollectionMetadata: true
+};
+var bookends = new Bookends(config);</pre>
+
+The config is optional, reasonable defaults are set if it is omitted. The config can contain the following keys:
+
+
+            </p>
+            <h3 id="maxDepth">maxDepth (default: 6)</h3>
+            <p>Imposes a limit on how deep the hydration tree can be. Each relation specified in a hydration adds one more to the depth.
+            For example, 
+            
+            <p>
+            <code>[column1,relation1=[column2,relation2=[column3]]]</code> 
+            </p>
+            <p>
+              has a depth of 3. This is a primitive means of preventing Bookends from performing too many SQL queries.
+            </p>
+
+            <h3 id="includeChildCollectionMetadata">includeChildCollectionMetadata (default: false)</h3>
+            <p>
+              This key affects how child collections are hydrated. If set to false, child records are returned in a simple array.
+            </p>
+            <p>For example, with this hydration:</p>
+            <p>
+            <code>[children=[column1]]</code>
+            </p>
+            <p>When set to false, the result looks like</p>
+<pre>{
+  records: [
+    {
+      children: [
+        { column1: 'foo' },
+        { column1: 'bar' }
+      ]
+    }
+  ]
+}
+</pre>
+
+            <p>When set to true, the result instead looks like</p>
+
+<pre>{
+  records: [
+    {
+      children: {
+        count: 2,
+        records: [
+          { column1: 'foo' },
+          { column1: 'bar' }
+        ]
+      ]
+    }
+  ]
+}
+</pre>
+
+            <p>The default of false is usually what you want. But including metadata can be useful if you are merging a previous aggregation with a hydration. It also sets up for allowing paging of child records, which is not yet implemented.</p>
+            
+
+          <h2 id="methods">methods</h2>
+          <h3 id="hydrate" class="header">hydrate</h3><code>bookends.hydrate(Model, [options], [hydration])</code> <br>
+          <p>
+          The sole public method of Bookends, hydrate() is used to return data from your database.
+          <ul>
+            <li><b>parameters</b>
+               <ul>
+                 <li><tt>Model (function)</tt> - A <a href="http://bookshelfjs.org">Bookshelf.js</a> Model. See <a href="getting-started.html">the getting started guide</a> for more info</li>
+                 <li><tt>[options] (object)</tt> - An optional options object where you can specify where clauses, sorting, limits, etc. See below</li>
+                 <li><tt>[hydration] (string|array)</tt> - An optional hydration string or array specifying what data, relations and aggregations should be retrieved. If omitted, it defauls to <tt>[*]</tt> which results in retrieving all columns for the specified model.</li>
+               </ul>
+            </li>
+          </ul>         
+
+          <p><b>returns: </b> A promise is returned which will resolve to the result of the hydration.</p>
+
+          <h4>hydrate() options</h4>
+          <p>The optional options object can contain these keys (all are optional):</p>
+               <ul>
+                  <li>options
+                     <ul>
+                       <li><tt>limit (number)</tt> - imposes a limit on how many records will be returned.</li>
+                       <li><tt>offset (number)</tt> - offsets the query by the given number. Useful for paging.</li>
+                       <li><tt>totalCount (boolean)</tt> - if set to true, an additional query will be performed to determine the total count of records for the model. If where clauses are included, these where clauses are used both for returning records and determining total count. The result object will have an additional <tt>totalCount</tt> property.</li>
+                       <li><tt>single (boolean)</tt> - if set to true, it limits the query to one record (imposing a limit of <tt>1</tt>). Instead of returning a result object, the record itself is directly returned.</li>
+                        <li><tt>where (object|array)</tt> - sets where clause(s) on the root query that will be performed for the model that is being hydrated. See below for more info.
+                     </ul>
+                  </li>
+               </ul>
+
+          <h4>where clauses</h4>
+          <p>
+          When specifying where clauses, they are passed directly into Bookshelf. See <a href="http://bookshelfjs.org/#Model-where">Bookshelf's documentation on where and query for more information</a></p>
+          <p>
+          Multiple where clauses can be passed in as an array. In that case they are <tt>ANDed</tt> together. <tt>OR</tt> is not currently supported.
+          </p>
+          <p>If doing an equals where clause an object can be used, ie <tt>{id: 4}</tt>, which results in <tt>where id = 4</tt>. For other clauses, an array of strings is required, for example <tt>["name", "like", "Bob%"]</tt>.
+          </p>
+          <p>Here is an example multiple where-clause:
+<pre>var options = {
+  where: [
+    {type: 'car'},
+    ["model", "like", "Ford%"]
+  ]
+};
+
+bookends.hydrate(Vehicle, options, '[*]').then(function(result) {
+  ...
+});
+</pre>
+       <h2 id="hydration-strings">hydration strings</h2>
+       <p>
+        Hydration strings are the entire reason Bookends exist. The hydration string specifies what data to retrieve and how to retrieve it.
+      </p>
+      <p>Hydration strings always start with <tt>[</tt> and end with <tt>]</tt>, the analogy to an array is pretty accurate, each bracket pairing represents how to hydrate one level of the hydration.
+      </p>
+      <p>
+        the hydration string is optional, if omitted then the default hydration <tt>[*]</tt> is performed, which retrieves all columns for the model.
+      </p>
+      <h3 id="hydration-strings-columns">columns</h3>
+      <p>To specify columns to retrieve, include them with brackets.</p>
+      <p>
+        <code>[column1,column2,columnn]</code>
+      </p>
+      <p>
+        Only the columns you specified are returned in the result. This includes primary and foreign key columns. If you need for example the id column, you must specify it.
+      </p>
+      
+      <h3 id="hydration-strings-relations">relations</h3>
+      <p>
+        To return a related model with your hydration, specify it within the hydration. Relations are denoted by <tt>=</tt> which then indicates how tghe relation should be hydrated
+      </p>
+      <p>
+        <code>[column1,relation1=[column2,column3]]</code>
+      </p>
+      <p>
+      In the above example, column2 and column3 will be retrieved for the relation named relation1. You must specify the name of the relation as defined in your Bookshelf model, <b>not</b> the related table's name.
+      </p>
+      <p>
+        The body of the relation can be a hydration itself (such as above) and can be arbitrarily deep
+      </p>
+      <p>
+        <code>[column1,children=[grandchildren=[greatgrandchildren=[someColumn]]]]</code>
+      </p>
+
+      <h3 id="hydration-strings-aggregations">aggregations</h3>
+      <p>For relations, instead of specifying a sub-hydration, you can specify an aggregation. Aggregations are denoted by leaving off the brackets</p>
+      <p>
+        <code>[column1,children=count]</code>
+      </p>
+      <p>In the above, instead of returning the children collection, they are instead counted and the result of the count is returned.</p>
+      <p>Aggregations can take parameters, which are denoted by parentheses</p>
+      <p>
+        <code>[column1,children=collect(name)]</code>
+      </p>
+      <p>Both built in and custom aggregations can be used. Built in aggregations lack a prefix (as in the above examples), and custom aggregations must start with <tt>custom.</tt>, for example:
+      </p>
+      <p>
+        <code>[column1,children=custom.myAggregation]</code>
+      </p>
+
+      <h2 id="built-in-aggregations">built in aggregations</h2>
+      <p>Bookends ships with three built in aggregations</p>
+      
+      <h3 id="agg-count">count</h3>
+
+      <p>Counts the child relation and returns the quantity as <tt>{count: [number]}</tt>.</p>
+
+<pre>bookends.hydrate(Author, '[books=count]').then(function(result) {
+  console.log(result.records[0].books.count); // a number
+});</pre>
+
+      <h3 id="agg-sum">sum</h3>
+      <p>Given a numeric column, sums the values as <tt>{sum: [number]}</tt>.</p>
+
+<pre>bookends.hydrate(Author, '[books=sum(price)]').then(function(result) {
+  console.log(result.records[0].books.price); // a number
+});</pre>
+
+      <h3 id="agg-collect">collect</h3>
+      <p>Given a column, collects that column into a simple array</p>
+
+<pre>bookends.hydrate(Author, '[books=collect(title)]').then(function(result) {
+  console.log(result.records[0].books); // ["The Cat in the Hat", "Green Eggs and Ham"]
+});</pre>
+
+      <h2 id="custom-aggregations">custom aggregations</h2>
+      <p>You can provide bookends with your own aggregations. See the <a href="getting-started.html">getting started guide</a> for an example.</p>
+      <p>TODO: flesh this section out</p>
+    </div>
+   </body>
+</html>

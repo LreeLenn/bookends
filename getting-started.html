@@ -105,7 +105,12 @@ Aggregations do not take place in the database, a minor ding against Bookends. I
     <span class="p">{</span> <span class="nx">books</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title5'</span><span class="p">,</span> <span class="s1">'title6'</span><span class="p">,</span> <span class="s1">'etc'</span><span class="p">]}</span>
   <span class="p">]</span>
 <span class="p">}</span>
-</code></pre><h2>Where Clauses, Sorting, Limits, etc</h2><p>You can further fine tune the query by passing an additional options object to hydrate. See the <a href="api-docs.html">API docs</a> for the gory details.</p><h3>where</h3><p>Add a where clause to the root SQL query.</p>
+</code></pre><h2>Where Clauses, Sorting, Limits, etc</h2><p>You can further fine tune the query by passing an additional options object to hydrate. See the <a href="docs.html">API docs</a> for the gory details.</p><h3>orderBy</h3><p>Sort the root level records by a column.</p>
+<pre><code class="codehilite"><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">orderBy</span><span class="o">:</span> <span class="p">[</span><span class="s1">'last_name'</span><span class="p">,</span> <span class="s1">'DESC'</span><span class="p">]</span>
+<span class="p">};</span>
+<span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="s1">'[first_name,last_name]'</span><span class="p">)</span>
+</code></pre><h3>where</h3><p>Add a where clause to the root SQL query.</p>
 <pre><code class="codehilite"><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
   <span class="nx">where</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">[</span><span class="s1">'first_name'</span><span class="p">,</span> <span class="s1">'like'</span><span class="p">,</span> <span class="s1">'Edg%'</span><span class="p">],</span>

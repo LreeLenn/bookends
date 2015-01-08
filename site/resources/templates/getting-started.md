@@ -181,7 +181,18 @@ For example, in the above, the final result will look like:
 
 ## Where Clauses, Sorting, Limits, etc
 
-You can further fine tune the query by passing an additional options object to hydrate. See the [API docs](api-docs.html) for the gory details.
+You can further fine tune the query by passing an additional options object to hydrate. See the [API docs](docs.html) for the gory details.
+
+### orderBy
+Sort the root level records by a column.
+
+```javascript
+var options = {
+  orderBy: ['last_name', 'DESC']
+};
+bookends.hydrate(Author, options, '[first_name,last_name]')
+```
+
 
 ### where
 Add a where clause to the root SQL query.
@@ -245,4 +256,3 @@ bookends.hydrate(Author, options, '[*]').then(function(result) {
 ```
 
 **NOTE:** if `totalCount` is used in conjunction with a where clause, that where clause is also used to calculate totalCount.
-

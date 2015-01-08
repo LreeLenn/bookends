@@ -91,8 +91,11 @@ Aggregations do not take place in the database, a minor ding against Bookends. I
 <span class="nx">bookends</span><span class="p">.</span><span class="nx">hydrate</span><span class="p">(</span><span class="nx">Author</span><span class="p">,</span> <span class="s1">'[books=custom.myCollect(title)]'</span><span class="p">).</span><span class="nx">then</span><span class="p">(...);</span>
 </code></pre><p><code>hydration()</code> receives a <code>spec</code> parameter, which is simply what the user entered parsed out into an object. For example, <code>[books=custom.myCollect(title)]</code> would result in <code>hydrate()</code> receiving this object:</p>
 <pre><code class="codehilite"><span class="p">{</span>
-  <span class="nx">aggregation</span><span class="o">:</span> <span class="s1">'myCollect'</span><span class="p">,</span>
-  <span class="nx">params</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title'</span><span class="p">]</span>
+  <span class="nx">relation</span><span class="o">:</span> <span class="s1">'books'</span><span class="p">,</span>
+  <span class="nx">aggregation</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">method</span><span class="o">:</span> <span class="s1">'myCollect'</span><span class="p">,</span>
+    <span class="nx">params</span><span class="o">:</span> <span class="p">[</span><span class="s1">'title'</span><span class="p">]</span>
+  <span class="p">}</span>
 <span class="p">}</span>
 </code></pre><p><code>hydrate()</code> tells Bookends what data the aggregation needs. You can return a hydration string, or an array of columns. So in this case, the parameters to the aggregation doubly work as the hydration.</p><p><code>aggregate()</code> receives an array of the records that were hydrated, as well as that same spec object again. It is up to <code>aggregate()</code> to perform the actual aggregation. Whatever <code>aggregate()</code> returns is what will end up in the final data result.</p><p>For example, in the above, the final result will look like:</p>
 <pre><code class="codehilite"><span class="p">{</span>

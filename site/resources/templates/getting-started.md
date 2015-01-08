@@ -155,8 +155,11 @@ bookends.hydrate(Author, '[books=custom.myCollect(title)]').then(...);
 
 ```javascript
 {
-  aggregation: 'myCollect',
-  params: ['title']
+  relation: 'books',
+  aggregation: {
+    method: 'myCollect',
+    params: ['title']
+  }
 }
 ```
 
